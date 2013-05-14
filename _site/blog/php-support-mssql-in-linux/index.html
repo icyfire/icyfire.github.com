@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title> 在Linux下让PHP支持MSSQL -  礁湖星云</title>
+    <meta name="description" content="PHP天然就对MySQL有良好的支持，但是想要用PHP对SQL Server进行操作，则需要花点时间了。今天刚好团队里的一个项目需要用PHP对SQL Server进行操作，遂帮忙配置好环境。">
+    <meta name="viewport" content="width=device-width">
+    <link rel="canonical" href="/blog/php-support-mssql-in-linux">
+    <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,400,700&#038;subset=latin,latin-ext' type='text/css' media='all' />
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shCoreDjango.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shThemeDjango.css">
+    <!--[if lt IE 9]>
+    <script src="/javascript/html5.js"></script>
+    <![endif]-->
+</head>
+<body class="home blog logged-in admin-bar no-customize-support custom-background custom-font-enabled single-author">
+    <div id="page" class="hfeed site">
+        <header id="masthead" class="site-header" role="banner">
+            <hgroup>
+                <h1 class="site-title"><a href="http://icyfire.github.com/" title="礁湖星云" rel="home">礁湖星云</a></h1>
+                <h2 class="site-description">Just another GitHub Pages</h2>
+            </hgroup>
+            <nav id="site-navigation" class="main-navigation" role="navigation">
+                <h3 class="menu-toggle">菜单</h3>
+                <a class="assistive-text" href="#content" title="跳至内容">跳至内容</a>
+                <div class="nav-menu">
+                    <ul>
+                      <li class="current_page_item"><a href="http://icyfire.github.com/" title="首页">首页</a></li>
+                      <!--<li class="page_item page-item-2"><a href="http://www.icyfire.me/sample-page/">Sample Page</a></li>-->
+                    </ul>
+                </div>
+            </nav><!-- #site-navigation -->
+            <a href="http://www.icyfire.me/"><img src="http://www.icyfire.me/wp-content/uploads/2013/03/cropped-cherryblossoms1.jpg" class="header-image" width="940" height="198" alt="" /></a>
+        </header><!-- #masthead -->
+        <div id="main" class="wrapper">
+            <div id="primary" class="site-content">
+                <div id="content" role="main">
+                    <article class="post type-post status-publish format-standard hentry">
+    <header class="entry-header">
+        <h1 class="entry-title">
+            在Linux下让PHP支持MSSQL
+        </h1>
+    </header><!-- .entry-header -->
+    <div class="entry-content">
+        <p>PHP天然就对MySQL有良好的支持，但是想要用PHP对SQL Server进行操作，则需要花点时间了。今天刚好团队里的一个项目需要用PHP对SQL Server进行操作，遂帮忙配置好环境。</p>
+
+<p>首先说明下，服务器的系统版本为SUSE Linux Enterprise Server 10 SP3。</p>
+<h2>1. 安装FreeTDS</h2><a target='_blank' href='http://www.freetds.org/'>FreeTDS</a><pre class='brush: bash; gutter: false; first-line: 1; highlight: []; html-script: false'>
+wget http://ibiblio.org/pub/Linux/ALPHA/freetds/stable/freetds-stable.tgz
+tar zxvf freetds-stable.tgz
+cd freetds-0.82
+./configure --prefix=/usr/local/freetds --with-tdsver=8.0 --enable-msdblib --enable-dbmfix
+make &amp;&amp; make install
+</pre>
+<p>成功安装完，最好更新下动态连接库缓存： <pre class='brush: bash; gutter: false; first-line: 1; highlight: []; html-script: false'>
+echo &quot;/usr/local/freetds/lib&quot; &gt;&gt; /etc/ld.so.conf
+ldconfig
+</pre></p>
+<h2>2. 配置FreeTDS及连接测试</h2>
+<p>FreeTDS的配置文件放在安装目录的etc里，根据第一步的configure参数，我们FreeTDS安装在/usr/local/freetds： <pre class='brush: bash; gutter: false; first-line: 1; highlight: []; html-script: false'>
+vim /usr/local/freetds/etc/freetds.conf
+</pre> 由于不太清楚FreeTDS的具体有哪些可配置项，这里就不深入了，但是提供个比较重要的配置，用来解决中文乱码的问题。在配置文件添加如下语句： <pre class='brush: text; gutter: false; first-line: 1; highlight: []; html-script: false'>client charset = utf8</pre> 然后，我们使用tsql命令测试下是否能正常连接上SQL Server数据库： <pre class='brush: bash; gutter: false; first-line: 1; highlight: []; html-script: false'>
+cd /usr/local/freetds/bin
+./tsql -H 192.168.192.71 -p 1433 -U sa -P aHieuW2012
+</pre> 正常连接的话应该显示如下语句： <pre class='brush: bash; gutter: false; first-line: 1; highlight: []; html-script: false'>
+locale is &quot;zh_CN.UTF-8&quot;
+locale charset is &quot;UTF-8&quot;
+1&gt; 
+</pre></p>
+<h2>3. 安装php的mssql扩展</h2>
+<p>服务器上的php版本为5.3.13，php已安装在/usr/local/services/php下，扩展的目录为/usr/local/services/php/extensions。下面是安装mssql扩展的方法： <pre class='brush: bash; gutter: false; first-line: 1; highlight: []; html-script: false'>
+cd php-5.3.13/ext/mssql/
+/usr/local/services/php/bin/phpize
+./configure --with-php-config=/usr/local/services/php/bin/php-config --with-mssql=/usr/local/freetds
+make #生成扩展文件，放在当前目录的module文件夹下
+cp modules/mssql.so /usr/local/services/php/extensions/ #把扩展文件复制到PHP的扩展目录下
+</pre></p>
+<h2>4. 配置php.ini并验证安装结果</h2>
+<p>打开php.ini，添加如下扩展语句： <pre class='brush: text; gutter: false; first-line: 1; highlight: []; html-script: false'>extension=mssql.so</pre> 重启PHP服务后（服务器用的是php-fpm），打印phpinfo，出现如下配置则代表php能正常操作SQL Server了。</p>
+<img height='488' alt='' title='php_ext_mssql' width='606' src='/images/2013/04/php_ext_mssql.png' />
+<p>P.S. 此文章发表于2012年7月13日，由旧Blog转移过来。</p>
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+        本条目发布于<time class="entry-date">2013年04月03日</time>。</footer><!-- .entry-meta -->
+</article><!-- #post -->
+                </div><!-- #content -->
+            </div><!-- #primary -->
+      </div><!-- #main .wrapper -->
+        <footer id="colophon" role="contentinfo">
+            <div class="site-info">
+                <a href="http://t.qq.com/icyfire" title="腾讯微博">@icyfire</a>
+            </div><!-- .site-info -->
+        </footer><!-- #colophon -->
+  </div><!-- #page -->
+<script type='text/javascript' src='/javascripts/sh/shCore.js'></script>
+<script type='text/javascript' src='/javascripts/sh/shAutoloader.js'></script>
+<script type='text/javascript' src='/javascripts/navigation.js?ver=1.0'></script>
+<script type="text/javascript">
+SyntaxHighlighter.autoloader(
+  'js jscript javascript  /javascripts/sh/shBrushJScript.js',
+  'php  /javascripts/sh/shBrushPhp.js',
+  'bash  /javascripts/sh/shBrushBash.js',
+  'text  /javascripts/sh/shBrushPlain.js'
+);
+ 
+SyntaxHighlighter.all();
+</script>
+</body>
+</html>

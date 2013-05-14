@@ -1,0 +1,21 @@
+---
+layout: default
+title: Home
+---
+<!-- Show last 10 posts here -->
+{% for post in site.posts limit: 10  %}
+
+    <article class="post type-post status-publish format-standard hentry">
+        <header class="entry-header">
+            <h1 class="entry-title">
+                <a href="{{ post.url }}" title="链向 {{ post.title }} 的固定链接">{{ post.title }}</a>
+            </h1>
+        </header><!-- .entry-header -->
+        <div class="entry-content">
+            {{ post.description }}
+        </div><!-- .entry-content -->
+        <footer class="entry-meta">
+            发布于{{ post.date | date: "%Y年%m月%d日" }}</time>。</footer><!-- .entry-meta -->
+    </article><!-- #post -->
+
+{% endfor %}
