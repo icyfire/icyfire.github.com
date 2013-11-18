@@ -43,14 +43,14 @@ var_dump($signature);
 
 这里我们学习到了三个openssl的方法：
 
-<b>openssl_pkey_get_private ( mixed $key [, string $passphrase = "" ] )</b><br />
+<b>openssl_pkey_get_private ( mixed $key [, string $passphrase = "" ] )</b>
 此方法用于加载私钥。<br />
 $key接受的参数可以是私钥文件（协议+文件路径）或者私钥的内容。如上面代码里的方式是后者，如果换成第一种方式则是：<br />
 $privatekey = openssl_pkey_get_private("file://$privatekeyFile", $passphrase);<br />
 $passphrase参数为私钥的密码，如果私钥没有密码的话，可以不传或者传空。
 此外，这个方法还有个别名：<b>openssl_get_privatekey</b>。
 
-<b>openssl_digest ( string $data , string $method [, bool $raw_output = false ] )</b><br />
+<b>openssl_digest ( string $data , string $method [, bool $raw_output = false ] )</b>
 此方法用于对数据进行摘要计算。<br />
 $data是需要生成摘要的数据。<br />
 $method是生成摘要的算法。摘要支持哪些算法，请参照附录1.<br />
@@ -67,7 +67,7 @@ $digest = bin2hex($digest);
 </pre>
 使用hash方法有个好处就是支持的算法要比openssl_digest多很多。具体支持的算法可以调用hash_algos()方法查看。
 
-<b>openssl_sign ( string $data , string &amp;$signature , mixed $priv_key_id [, int $signature_alg = OPENSSL_ALGO_SHA1 ] )</b><br />
+<b>openssl_sign ( string $data , string &amp;$signature , mixed $priv_key_id [, int $signature_alg = OPENSSL_ALGO_SHA1 ] )</b>
 此方法用于对数据进行签名。
 $data为需要进行签名的数据，一般为摘要。
 $signature为调用成功后生成的签名。
@@ -104,12 +104,12 @@ var_dump($verify); // int(1)表示验签成功
 
 这里，我们又学习到两个新的方法：
 
-<b>openssl_pkey_get_public ( mixed $certificate )</b><br />
+<b>openssl_pkey_get_public ( mixed $certificate )</b>
 这个方法用于加载公钥。<br />
 $certificate为公钥的内容。
 同样，这个方法也有个别名：此外，这个方法还有个别名：<b>openssl_get_publickey</b>。
 
-<b>openssl_verify ( string $data , string $signature , mixed $pub_key_id [, int $signature_alg = OPENSSL_ALGO_SHA1 ] )</b><br />
+<b>openssl_verify ( string $data , string $signature , mixed $pub_key_id [, int $signature_alg = OPENSSL_ALGO_SHA1 ] )</b>
 此方法用于验签。
 $data为用于生成签名的数据。
 $signature为上一步生成的签名。
@@ -162,14 +162,14 @@ var_dump($sensitiveData); // 应该跟$data一致
 
 很简单。这里我们又学到两个新的方法：
 
-<b>openssl_public_encrypt ( string $data , string &amp;$crypted , mixed $key [, int $padding = OPENSSL_PKCS1_PADDING ] )</b><br />
+<b>openssl_public_encrypt ( string $data , string &amp;$crypted , mixed $key [, int $padding = OPENSSL_PKCS1_PADDING ] )</b>
 此方法用于使用公钥进行加密。<br />
 $data为需要加密的数据。<br />
 $crypted为加密后的数据。<br />
 $key为公钥。<br />
 $padding为填充方式，默认为<b>OPENSSL_PKCS1_PADDING</b>，还可以是如下几个值：<b>OPENSSL_SSLV23_PADDING, OPENSSL_PKCS1_OAEP_PADDING, OPENSSL_NO_PADDING</b>。
 
-<b>openssl_private_decrypt ( string $data , string &amp;$decrypted , mixed $key [, int $padding = OPENSSL_PKCS1_PADDING ] )</b><br />
+<b>openssl_private_decrypt ( string $data , string &amp;$decrypted , mixed $key [, int $padding = OPENSSL_PKCS1_PADDING ] )</b>
 此方法用于使用私钥进行解密。<br />
 $data为需要解密的数据。<br />
 $decrypted为解密后的数据。<br />
@@ -182,7 +182,7 @@ $padding为填充方式。
 
 事实上，在HTTPS里，数据的加密和解密并不是直接使用公钥和私钥进行的，而是使用另外一个密钥进行对称加密跟解密。公钥跟私钥是用来加密跟解密这个密钥的。为什么要这样做了，理由跟上面讲到的签名一样，用公钥加密大数据是比较耗时耗性能的。
 
-<b>附录1 签名算法：</b><br />
+<b>附录1 签名算法：</b>
 <table>
     <tr>
         <th>算法</th>
