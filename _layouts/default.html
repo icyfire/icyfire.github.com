@@ -10,10 +10,12 @@
     <meta name="description" content="{% if page.description %}{{ page.description }}{% else %}礁湖星云{% endif %}">
     <meta name="viewport" content="width=device-width">
     <link rel="canonical" href="{{ page.url | canonical }}">
-    <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,400,700&#038;subset=latin,latin-ext' type='text/css' media='all' />
+    <link rel="stylesheet" href="/stylesheets/sh/shCoreRDark.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shThemeRDark.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/doc.min.css">
     <link rel="stylesheet" href="/stylesheets/style.css">
-    <link rel="stylesheet" href="/stylesheets/sh/shCoreDjango.css">
-    <link rel="stylesheet" href="/stylesheets/sh/shThemeDjango.css">
     <!--[if lt IE 9]>
     <script src="/javascript/html5.js"></script>
     <![endif]-->
@@ -58,7 +60,8 @@ SyntaxHighlighter.autoloader(
   'js jscript javascript  /javascripts/sh/shBrushJScript.js',
   'php  /javascripts/sh/shBrushPhp.js',
   'bash  /javascripts/sh/shBrushBash.js',
-  'text  /javascripts/sh/shBrushPlain.js'
+  'text  /javascripts/sh/shBrushPlain.js',
+  'plain  /javascripts/sh/shBrushPlain.js'
 );
  
 SyntaxHighlighter.all();
