@@ -752,7 +752,7 @@ article.sticky .featured-post {
     margin: 1.714285714rem 0;
     line-height: 1.714285714;
 }
-.entry-content h1,
+/*.entry-content h1,
 .comment-content h1 {
     font-size: 21px;
     font-size: 1.5rem;
@@ -788,7 +788,7 @@ article.sticky .featured-post {
     font-size: 12px;
     font-size: 0.857142857rem;
     line-height: 1.846153846;
-}
+}*/
 .entry-content p,
 .entry-summary p,
 .comment-content p,

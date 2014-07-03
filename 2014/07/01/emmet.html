@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title> 前端工具篇之Emmet -  礁湖星云</title>
+    <meta name="description" content="前端工具篇之Emmet">
+    <meta name="viewport" content="width=device-width">
+    <link rel="canonical" href="/2014/07/01/emmet.html">
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shCoreRDark.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shThemeRDark.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/doc.min.css">
+    <!--[if lt IE 9]>
+    <script src="/javascript/html5.js"></script>
+    <![endif]-->
+</head>
+<body class="home blog logged-in admin-bar no-customize-support custom-background custom-font-enabled single-author">
+    <div id="page" class="hfeed site">
+        <header id="masthead" class="site-header" role="banner">
+            <hgroup>
+                <h1 class="site-title"><a href="http://icyfire.github.com/" title="礁湖星云" rel="home">礁湖星云</a></h1>
+                <h2 class="site-description">Just another GitHub Pages</h2>
+            </hgroup>
+            <nav id="site-navigation" class="main-navigation" role="navigation">
+                <h3 class="menu-toggle">菜单</h3>
+                <a class="assistive-text" href="#content" title="跳至内容">跳至内容</a>
+                <div class="nav-menu">
+                    <ul>
+                      <li class="current_page_item"><a href="http://icyfire.github.com/" title="首页">首页</a></li>
+                      <!--<li class="page_item page-item-2"><a href="http://www.icyfire.me/sample-page/">Sample Page</a></li>-->
+                    </ul>
+                </div>
+            </nav><!-- #site-navigation -->
+            <a href="http://www.icyfire.me/"><img src="/images/2013/07/cherry.jpg" width="940" height="198" alt="" /></a>
+        </header><!-- #masthead -->
+        <div id="main" class="wrapper">
+            <div id="primary" class="site-content">
+                <div id="content" role="main">
+                    <article class="post type-post status-publish format-standard hentry">
+    <header class="entry-header">
+        <h1 class="entry-title">
+            前端工具篇之Emmet
+        </h1>
+    </header><!-- .entry-header -->
+    <div class="entry-content">
+        <p><a href="http://emmet.io/" target="_blank">Emmet</a>(前身为Zen Coding)是一个网页开发工具，它可以极大的提高你编写HTML和CSS代码的效率。</p>
+<p>在深入这个工具前，我们先来看个演示（演示所用的编辑器为Sublime Text2，并且已安装Emmet插件）。我们在编辑器里输入<code>#page&gt;div.logo+ul#navigation&gt;li*5&gt;a{Item $}</code>，并按<code>Tab</code>键：</p>
+<p><img src="/images/2014/07/emmet_example.gif" alt="" /></p>
+<p>可以看到刚才输入的那段代码立刻变成了一段我们非常熟悉的HTML代码。演示里输入的那段类似表达式的东西，Emmet把它称为缩写（<code>abbreviation</code> ），在按Tab键后，Emmet就会被触发，然后把它转化为实际的代码。缩写由我们熟悉的HTML标签和符合组成，下面会详细进行讲解。</p>
+<h3>一切从零开始</h3>
+<p>OK，我们先从创建一个HTML文档开始。通常的流程是，我们创建一个HTML文档，然后写DOCTYPE，写html、head和body等标签，有没有想过我们只需要输入一段很短的语句，编辑器就能自动帮我们把这些标签按正常结构输出出来？请看下面这个演示：</p>
+<p><img src="/images/2014/07/emmet_html.gif" alt="" /></p>
+<p>没错，只需要一个感叹号，我们就得到了我们想要的东西。输入<code>html:5</code>也可以获得同样的效果，这两个缩写都会得到DOCTYPE为HTML5的一个通用HTML结构代码。</p>
+<div class="bs-callout bs-callout-info">
+    <h4>如果我们想使用其他的DOCTYPE，Emmet也提供其他的缩写：</h4>
+    <p><code>html:5</code>或者<code>!</code>：HTML5 doctype</p>
+    <p><code>html:xt</code>：XHTML transitional doctype</p>
+    <p><code>html:4s</code>：HTML4 strict doctype</p>
+</div>
+<h3>元素</h3>
+<p>使用Emmet输出HTML元素标签是件很简单的事情，你所需要做的就是输入想显示的元素的名称，然后按Tab键。例如输入<code>a</code>，然后按Tab，我们会看到a被转化为：</p>
+<div class="highlight">
+    <pre class="brush:plain;gutter:false;">
+        <a href=""></a>
+    </pre>
+</div>
+<div class="bs-callout bs-callout-info">
+    <p>Emmet并没有预定义哪些标签名是可用的，你可以随意输入任何的字符，它都会把它转化为对应的标签。</p>
+</div>
+<p>那如果我们想为元素添加class和id呢？很简单，跟我们写CSS有点类似，<code>#id</code>表示要添加的ID，<code>.class</code>表示要添加的class。例如我们输入<code>a#foo.bar</code>，则会看到以下输出：</p>
+<div class="highlight">
+    <pre class="brush:plain;gutter:false;">
+        <a href="" id="foo" class="bar"></a>
+    </pre>
+</div>
+<p>如果要为元素添加属性，我们使用[attr]这个标记，例如我们为一个a元素添加href属性，只需要输入<code>a[href=www.hwtrip.com]</code>：</p>
+<div class="highlight">
+    <pre class="brush:plain;gutter:false;">
+        <a href="www.hwtrip.com"></a>
+    </pre>
+</div>
+<div class="bs-callout bs-callout-info">
+    <p>如果想为元素添加多个属性，我们可以用<code>[attr1][attr2]</code>的方式，也可以使用<code>[attr1 attr2]</code>的方式，例如为一个a元素添加href和alt属性，我们可以用以下的缩写：<code>a[href=# alt="Hello World"]</code>。</p>
+</div>
+<p>为元素添加文本我们用到大括号<code>{}</code>，例如<code>a{Hello World}</code>会输出：</p>
+<div class="highlight">
+    <pre class="brush:plain;gutter:false;">
+        <a href="">Hello World</a>
+    </pre>
+</div>
+<p>下面我们看一演示：</p>
+<p><img src="/images/2014/07/emmet_element.gif" alt="" /></p>
+<h3>嵌套</h3>
+<p>通常情况下我们的元素都不会只有一个这么简单，我们可能会有层层的嵌套，Emmet为我们提供了3个操作符去处理各种情况。</p>
+<h4>子操作符：<code>&gt;</code></h4>
+<p>我们可以使用<code>&gt;</code>把一个元素嵌入到另外一个元素，例如<code>div&gt;ul&gt;li</code>会输出：</p>
+<div class="highlight">
+    <pre class="brush:plain;gutter:false;">
+        <div>
+            <ul>
+                <li></li>
+            </ul>
+        </div>
+    </pre>
+</div>
+<h4>兄弟操作符：<code>+</code></h4>
+<p>使用<code>+</code>可以把一个元素放到另外一个元素旁边，例如<code>div+p+h1</code>会输出：</p>
+<div class="highlight">
+    <pre class="brush:plain;gutter:false;">
+        <div></div>
+        <p></p>
+        <h1></h1>
+    </pre>
+</div>
+<h4>父操作符<code>^</code></h4>
+<p>使用<code>^</code>操作符后，当前的上下文就会改变，向上爬一层，操作符后面的元素就会在那一层进行显示，例如<code>div&gt;p&gt;span</code>的输出是：</p>
+<div class="highlight">
+    <pre class="brush:plain;gutter:false;">
+        <div>
+            <p><span></span></p>
+        </div>
+    </pre>
+</div>
+<p>我们在后面增加一个<code>^</code>操作符，缩写语句变为<code>div&gt;p&gt;span^div</code>，则输出变为：</p>
+<div class="highlight">
+    <pre class="brush:plain;gutter:false;">
+        <div>
+            <p><span></span></p>
+            <div></div>
+        </div>
+    </pre>
+</div>
+<div class="bs-callout bs-callout-info">
+    <p><code>^</code>操作符是可以连续使用的，每用一次就往上爬一个层级，例如<code>div&gt;p&gt;span^^div</code>的结果是：</p>
+    <div class="highlight">
+        <pre class="brush:plain;gutter:false;">
+            <div>
+                <p><span></span></p>
+            </div>
+            <div></div>
+        </pre>
+    </div>
+</div>
+<p>下面是这3种操作的演示：</p>
+<p><img src="/images/2014/07/emmet_nesting.gif" alt="" /></p>
+<h3>乘法操作符：<code>*</code>及编号操作符：<code>$</code></h3>
+<p>想象一下，如果我们要创建一个列表，例如说5个li，以我们刚才学习到的东西，我们可能会用这个语法：<code>ul&gt;li+li+li+li+li</code>。这明显是件很傻的事情，所以Emmet提供了<code>*</code>这个操作符让我们可以任意次重复一个语法。上面那个例子我们可以用这个语法搞定：<code>ul&gt;li*5</code>。输出为：</p>
+<div class="highlight">
+    <pre class="brush:plain;gutter:false;">
+        <ul>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+    </pre>
+</div>
+<p>乘法操作符让我们可以重复相同的元素，但是如果我们想为重复的元素设置唯一的编号呢，例如我们想为以上的5个li元素增加类item1到item5。这时操作符：<code>$</code>派上用场了。我们只需要在需要编号的地方添加这个操作符即可。例如<code>ul&gt;li.item$*5</code>，输出结果为：</p>
+<div class="highlight">
+    <pre class="brush:plain;gutter:false;">
+        <ul>
+            <li class="item1"></li>
+            <li class="item2"></li>
+            <li class="item3"></li>
+            <li class="item4"></li>
+            <li class="item5"></li>
+        </ul>
+    </pre>
+</div>
+<p>通过修改<code>$</code>的数量，我们可以改变编号的占位，例如<code>$$$</code>的占位是3。<code>ul&gt;li.item$$$*5</code>的输出为：</p>
+<div class="highlight">
+    <pre class="brush:plain;gutter:false;">
+        <ul>
+            <li class="item001"></li>
+            <li class="item002"></li>
+            <li class="item003"></li>
+            <li class="item004"></li>
+            <li class="item005"></li>
+        </ul>
+    </pre>
+</div>
+<p>我们还可以改变编号的起始位置，只需要在<code>$</code>后面增加<code>@N</code>。例如<code>ul&gt;li.item$@3*5</code>：</p>
+<div class="highlight">
+    <pre class="brush:plain;gutter:false;">
+        <ul>
+            <li class="item3"></li>
+            <li class="item4"></li>
+            <li class="item5"></li>
+            <li class="item6"></li>
+            <li class="item7"></li>
+        </ul>
+    </pre>
+</div>
+<p>在<code>$</code>后面增加<code>@-</code>，可以让编号倒序排列。<code>ul&gt;li.item$@-*5</code>：</p>
+<div class="highlight">
+    <pre class="brush:plain;gutter:false;">
+        <ul>
+            <li class="item5"></li>
+            <li class="item4"></li>
+            <li class="item3"></li>
+            <li class="item2"></li>
+            <li class="item1"></li>
+        </ul>
+    </pre>
+</div>
+<div class="bs-callout bs-callout-info">
+    <p>修改起始编号<code>@N</code>和倒序<code>@-</code>可以同时使用，例如<code>ul&gt;li.item$@-3*5</code>：</p>
+    <div class="highlight">
+        <pre class="brush:plain;gutter:false;">
+            <ul>
+                <li class="item7"></li>
+                <li class="item6"></li>
+                <li class="item5"></li>
+                <li class="item4"></li>
+                <li class="item3"></li>
+            </ul>
+        </pre>
+    </div>
+</div>
+<p>下面请看演示：</p>
+<p><img src="/images/2014/07/emmet_repeat.gif" alt="" /></p>
+<h3>分组</h3>
+<p>对于比较复杂的元素结构，我们需要用到中括号<code>()</code>把其中的一个子结构括起来作为一个整体，不然的话要实现那个元素结果语法会变得很复杂。<code>div&gt;(header&gt;ul&gt;li*2&gt;a)+footer&gt;p</code>：</p>
+<div class="highlight">
+    <pre class="brush:plain;gutter:false;">
+        <div>
+            <header>
+                <ul>
+                    <li><a href=""></a></li>
+                    <li><a href=""></a></li>
+                </ul>
+            </header>
+            <footer>
+                <p></p>
+            </footer>
+        </div>
+    </pre>
+</div>
+<p>想象一下，如果上面那个结果不用分组的话，我们可能就要用<code>div&gt;header&gt;ul&gt;li*2&gt;a^^^footer&gt;p</code>这个语法去实现了，不但变得复杂，可读性也会变得很差。</p>
+<h3>总结</h3>
+<p>要熟悉使用Emmet并不简单，但是一旦熟悉后，它将会提高你编写HTML代码的速度（当然并不是每个人都这么认为）。文章最开始提到了Emmet也能用来编写CSS，所以后续我们再补充CSS方面的内容，同时Emmet也有很多其他的功能，这些以后有机会都会进行补充。</p>
+<div class="bs-callout bs-callout-info">
+    <p>更详细的文档，当然是看官网了：<a href="http://emmet.io/" target="_blank">http://emmet.io/</a></p>
+</div>
+
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+        本条目发布于<time class="entry-date">2014年07月01日</time>。</footer><!-- .entry-meta -->
+</article><!-- #post -->
+                </div><!-- #content -->
+            </div><!-- #primary -->
+      </div><!-- #main .wrapper -->
+        <footer id="colophon" role="contentinfo">
+            <div class="site-info">
+                <a href="http://t.qq.com/icyfire" title="腾讯微博">@icyfire</a>
+            </div><!-- .site-info -->
+        </footer><!-- #colophon -->
+  </div><!-- #page -->
+<script type='text/javascript' src='/javascripts/sh/shCore.js'></script>
+<script type='text/javascript' src='/javascripts/sh/shAutoloader.js'></script>
+<script type='text/javascript' src='/javascripts/navigation.js?ver=1.0'></script>
+<script type="text/javascript">
+SyntaxHighlighter.autoloader(
+  'js jscript javascript  /javascripts/sh/shBrushJScript.js',
+  'php  /javascripts/sh/shBrushPhp.js',
+  'bash  /javascripts/sh/shBrushBash.js',
+  'text  /javascripts/sh/shBrushPlain.js',
+  'plain  /javascripts/sh/shBrushPlain.js'
+);
+ 
+SyntaxHighlighter.all();
+</script>
+</body>
+</html>
