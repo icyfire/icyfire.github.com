@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title> Nginx配置篇之location指令 -  礁湖星云</title>
+    <meta name="description" content="浅析Nginx配置里location指令的配置和优先级等问题">
+    <meta name="viewport" content="width=device-width">
+    <link rel="canonical" href="/2014/07/15/nginx-configure-location.html">
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shCoreRDark.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shThemeRDark.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/doc.min.css">
+    <!--[if lt IE 9]>
+    <script src="/javascript/html5.js"></script>
+    <![endif]-->
+</head>
+<body class="home blog logged-in admin-bar no-customize-support custom-background custom-font-enabled single-author">
+    <div id="page" class="hfeed site">
+        <header id="masthead" class="site-header" role="banner">
+            <hgroup>
+                <h1 class="site-title"><a href="http://icyfire.github.com/" title="礁湖星云" rel="home">礁湖星云</a></h1>
+                <h2 class="site-description">Just another GitHub Pages</h2>
+            </hgroup>
+            <nav id="site-navigation" class="main-navigation" role="navigation">
+                <h3 class="menu-toggle">菜单</h3>
+                <a class="assistive-text" href="#content" title="跳至内容">跳至内容</a>
+                <div class="nav-menu">
+                    <ul>
+                      <li class="current_page_item"><a href="http://icyfire.github.com/" title="首页">首页</a></li>
+                      <!--<li class="page_item page-item-2"><a href="http://www.icyfire.me/sample-page/">Sample Page</a></li>-->
+                    </ul>
+                </div>
+            </nav><!-- #site-navigation -->
+            <a href="http://www.icyfire.me/"><img src="/images/2013/07/cherry.jpg" width="940" height="198" alt="" /></a>
+        </header><!-- #masthead -->
+        <div id="main" class="wrapper">
+            <div id="primary" class="site-content">
+                <div id="content" role="main">
+                    <article class="post type-post status-publish format-standard hentry">
+    <header class="entry-header">
+        <h1 class="entry-title">
+            Nginx配置篇之location指令
+        </h1>
+    </header><!-- .entry-header -->
+    <div class="entry-content">
+        <table>
+    <tr>
+        <td>Syntax:</td>
+        <td><b>location</b> [ = | ~ | ~* | ^~ ] uri { ... }<br /><b>location</b> @name { ... }</td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td>—</td>
+    </tr>
+    <tr>
+        <td>Context</td>
+        <td>server, location</td>
+    </tr>
+</table>
+<p>Nginx的location指令根据请求的URI设置对应的配置。</p>
+<h3>配置</h3>
+<p>location可以用<b>前缀字符串（prefix string）</b>定义，也可以用<b>正则表达式（regular expression）</b>定义。</p>
+<p></p>
+<p>例如我们访问<code>http://www.example.com/asset/img/icon.png</code>。那么对应的URI则是<code>/asset/img/icon.png</code>。那么前缀字符串则是从<code>/</code>开始到后面任意的字符。例如<code>/</code>是前缀字符串，<code>/asset/</code>是前缀字符串，<code>/asset/img/</code>也是前缀字符串，以此类推。以下面几个配置为例:</p>
+<div class="bs-example">
+    <pre class="brush:plain;gutter:true;">
+        location / {
+            [configuration A]
+        }
+
+        location /asset/ {
+            [configuration B]
+        }
+
+        location /asset/img/ {
+            [configuration C]
+        }
+    </pre>
+</div>
+<div class="highlight">
+3个配置事实上都能匹配到上面那个URI。但是最终会采用哪个，后面再细说。
+</div>
+
+<p>至于正则表达式，则很好理解，就是使用正则表达式去匹配URI，而要使用正则表达式去匹配则需要用到了<code>~</code>和<code>~*</code>这两个通配符。其中<code>~</code>表示大小写敏感，而<code>~*</code>表示大小写不敏感。</p>
+<div class="bs-example">
+    <pre class="brush:plain;gutter:true;">
+    location ~ \.(gif|jpg|png)$ {
+        [configuration D]
+    }
+
+    location ~* \.(gif|jpg|png)$ {
+        [configuration E]
+    }
+    </pre>
+</div>
+<div class="highlight">
+这两个配置同样可以匹配到<code>http://www.example.com/asset/img/icon.png</code>这个URI。
+</div>
+<p>那最终Nginx会采用哪个配置呢？</p>
+<h3>优先级</h3>
+<p>Nginx首先会去匹配用前缀字符串定义的location配置，可能会匹配出多个，Nginx会记住最长那个配置，上面的例子里都会匹配到，但是最后会被记住的则是<code>[configuration C]</code>。</p>
+<p>然后Nginx会去匹配用正则表达式定义的location配置，如果匹配的到，则这个配置作为最后采用的配置。如果匹配不到或者没有正则表达式定义的location配置，则使用上面记住的那个匹配。跟匹配前缀字符串不同，匹配正则表达式时，如果匹配到一个，就不会继续匹配下面的正则表达式配置了。所以Nginx最终匹配到的配置是<code>[configuration D]</code>。</p>
+<p>当然事情不会这么简单，看文档定义，我们还有两个通配符没有提到，就是<code>^~</code>和<code>=</code>。</p>
+<p>如果配置使用了<code>^~</code>这个通配符，并且这个配置是匹配到的最长的那个配置。则Nginx不会再去匹配正则表达式类型的location配置。如下面这个例子：</p>
+<div class="bs-example">
+    <pre class="brush:plain;gutter:true;">
+    location ^~ /asset/img/ {
+        [configuration F]
+    }
+    </pre>
+</div>
+<div class="highlight">
+Nginx最终采用的会是这个配置。
+</div>
+<p>最后说下<code>=</code>这个通配符，使用了这个通配符后，表示这个配置是要完全匹配，需要URI跟这个配置的前缀字符串完全一致才会匹配的到。它的优先级是最高的，如果匹配到，则不会进行其他配置的匹配了。如：</p>
+<div class="bs-example">
+    <pre class="brush:plain;gutter:true;">
+    location = /asset/img/icon.png {
+        [configuration G]
+    }
+    </pre>
+</div>
+<div class="highlight">
+Nginx在匹配到这个配置后，会终止匹配流程。
+</div>
+<p>所以总的匹配流程大致是这样的：</p>
+<p><img src="/images/2014/07/nginx_location.jpg" /></p>
+
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+        本条目发布于<time class="entry-date">2014年07月15日</time>。</footer><!-- .entry-meta -->
+</article><!-- #post -->
+                </div><!-- #content -->
+            </div><!-- #primary -->
+      </div><!-- #main .wrapper -->
+        <footer id="colophon" role="contentinfo">
+            <div class="site-info">
+                <a href="http://t.qq.com/icyfire" title="腾讯微博">@icyfire</a>
+            </div><!-- .site-info -->
+        </footer><!-- #colophon -->
+  </div><!-- #page -->
+<script type='text/javascript' src='/javascripts/sh/shCore.js'></script>
+<script type='text/javascript' src='/javascripts/sh/shAutoloader.js'></script>
+<script type='text/javascript' src='/javascripts/navigation.js?ver=1.0'></script>
+<script type="text/javascript">
+SyntaxHighlighter.autoloader(
+  'js jscript javascript  /javascripts/sh/shBrushJScript.js',
+  'php  /javascripts/sh/shBrushPhp.js',
+  'bash  /javascripts/sh/shBrushBash.js',
+  'text  /javascripts/sh/shBrushPlain.js',
+  'plain  /javascripts/sh/shBrushPlain.js'
+);
+ 
+SyntaxHighlighter.all();
+</script>
+</body>
+</html>

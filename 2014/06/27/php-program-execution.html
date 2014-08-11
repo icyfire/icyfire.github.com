@@ -183,15 +183,15 @@
         passthru('./ppmtogif sample.ppm');
     </pre>
 </div>
-<p>对于<code>exec</code>、<code>system</code>和<code>passthru</code>，需要注意以下的事项：
-&lt;div class="bs-callout bs-callout-info"&gt;
-    &lt;p&gt;如果需要程序在后台运行，则需要把标准输出重定向到一个文件或者其他的输出流，不然PHP会被阻塞知道程序执行完。&lt;/p&gt;
-    &lt;p&gt;另外如果<a href="http://sg2.php.net/manual/en/features.safe-mode.php" target="_blank">safe_mode</a>开启，则这个函数只能执行<a href="http://sg2.php.net/manual/en/ini.sect.safe-mode.php#ini.safe-mode-exec-dir" target="_blank">safe_mode_exec_dir</a>定义的目录里的程序，并且在路径里不能使用”..”。&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="bs-callout bs-callout-warning"&gt;
-    &lt;p&gt;如果执行的命令允许由用户传递过来的，则需要使用<a href="http://sg2.php.net/manual/en/function.escapeshellarg.php" target="_blank">escapeshellarg()</a>或者<a href="http://sg2.php.net/manual/en/function.escapeshellcmd.php" target="_blank">escapeshellcmd()</a>对命令进行过滤，以免用户可以随意执行命令。&lt;/p&gt;
-    &lt;p&gt;如果<a href="http://sg2.php.net/manual/en/features.safe-mode.php" target="_blank">safe_mode</a>开启，命令会被自动使用<a href="http://sg2.php.net/manual/en/function.escapeshellcmd.php" target="_blank">escapeshellcmd()</a>进行过滤。&lt;/p&gt;
-&lt;/div&gt;</p>
+<p>对于<code>exec</code>、<code>system</code>和<code>passthru</code>，需要注意以下的事项：</p>
+<div class="bs-callout bs-callout-info">
+    <p>如果需要程序在后台运行，则需要把标准输出重定向到一个文件或者其他的输出流，不然PHP会被阻塞知道程序执行完。</p>
+    <p>另外如果<a href="http://sg2.php.net/manual/en/features.safe-mode.php" target="_blank">safe_mode</a>开启，则这个函数只能执行<a href="http://sg2.php.net/manual/en/ini.sect.safe-mode.php#ini.safe-mode-exec-dir" target="_blank">safe_mode_exec_dir</a>定义的目录里的程序，并且在路径里不能使用".."。</p>
+</div>
+<div class="bs-callout bs-callout-warning">
+    <p>如果执行的命令允许由用户传递过来的，则需要使用<a href="http://sg2.php.net/manual/en/function.escapeshellarg.php" target="_blank">escapeshellarg()</a>或者<a href="http://sg2.php.net/manual/en/function.escapeshellcmd.php" target="_blank">escapeshellcmd()</a>对命令进行过滤，以免用户可以随意执行命令。</p>
+    <p>如果<a href="http://sg2.php.net/manual/en/features.safe-mode.php" target="_blank">safe_mode</a>开启，命令会被自动使用<a href="http://sg2.php.net/manual/en/function.escapeshellcmd.php" target="_blank">escapeshellcmd()</a>进行过滤。</p>
+</div>
 <h2><a href="http://sg2.php.net/manual/en/function.popen.php" target="_blank">popen</a></h2>
 <p>接下来介绍的<code>popen</code>其实是属于文件系统的函数，但是我们还是可以用它来实现执行外部程序的功能。</p>
 <div class="highlight">resource popen ( string $command , string $mode )</div>
