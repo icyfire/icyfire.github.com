@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title> GO —— Hello World -  礁湖星云</title>
+    <meta name="description" content="Go语言学习笔记第一篇 —— Hello Wolrd。">
+    <meta name="viewport" content="width=device-width">
+    <link rel="canonical" href="/2014/09/01/go-hello-world.html">
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shCoreRDark.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shThemeRDark.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/doc.min.css">
+    <!--[if lt IE 9]>
+    <script src="/javascript/html5.js"></script>
+    <![endif]-->
+</head>
+<body class="home blog logged-in admin-bar no-customize-support custom-background custom-font-enabled single-author">
+    <div id="page" class="hfeed site">
+        <header id="masthead" class="site-header" role="banner">
+            <hgroup>
+                <h1 class="site-title"><a href="http://icyfire.github.com/" title="礁湖星云" rel="home">礁湖星云</a></h1>
+                <h2 class="site-description">Just another GitHub Pages</h2>
+            </hgroup>
+            <nav id="site-navigation" class="main-navigation" role="navigation">
+                <h3 class="menu-toggle">菜单</h3>
+                <a class="assistive-text" href="#content" title="跳至内容">跳至内容</a>
+                <div class="nav-menu">
+                    <ul>
+                      <li class="current_page_item"><a href="http://icyfire.github.com/" title="首页">首页</a></li>
+                      <!--<li class="page_item page-item-2"><a href="http://www.icyfire.me/sample-page/">Sample Page</a></li>-->
+                    </ul>
+                </div>
+            </nav><!-- #site-navigation -->
+            <a href="http://www.icyfire.me/"><img src="/images/2013/07/cherry.jpg" width="940" height="198" alt="" /></a>
+        </header><!-- #masthead -->
+        <div id="main" class="wrapper">
+            <div id="primary" class="site-content">
+                <div id="content" role="main">
+                    <article class="post type-post status-publish format-standard hentry">
+    <header class="entry-header">
+        <h1 class="entry-title">
+            GO —— Hello World
+        </h1>
+    </header><!-- .entry-header -->
+    <div class="entry-content">
+        <h3>安装</h3>
+<p>Linux下安装Go的系统需求:</p>
+<table>
+    <tr>
+        <td><b>Operating system</b></td>
+        <td><b>Architectures</b></td>
+        <td><b>Notes</b></td>
+    </tr>
+    <tr>
+        <td>Linux 2.6.23 or later with glibc</td>
+        <td>amd64, 386, arm</td>
+        <td>CentOS/RHEL 5.x not supported; no binary distribution for ARM yet</td>
+    </tr>
+</table>
+<p>使用源码安装的方式进行安装，这里安装的是<code>1.3.1</code>版本。</p>
+<pre class="brush:bash;gutter:false;">
+$ wget https://storage.googleapis.com/golang/go1.3.1.src.tar.gz
+# 安装到/usr/local/services里
+$ tar zxvf go1.3.1.src.tar.gz - C /usr/local/services/
+# 进入源码目录，运行all.bash进行安装
+$ cd /usr/local/services/go/src
+$ ./all.bash
+</pre>
+<p>安装完设置环境变量，在<code>/etc/profile</code>里增加以下两行：</p>
+<pre class="brush:text;gutter:false;">
+export GOROOT=/usr/local/services/go
+export PATH=$PATH:$GOROOT
+</pre>
+<div class="bs-callout bs-callout-info">
+    Go默认你的安装路径是<code>/usr/local/go</code>，所以如果是安装在默认路径下，只需要增加一行：<code>export PATH=$PATH:/usr/local/go/bin</code>，而不需要设置<code>GOROOT</code>这个环境变量。
+</div>
+<h3>Hello World</h3>
+<p>下面编写一个Hello World来验证我们的安装。创建一个名为<code>hello.go</code>的文件并编写以下代码：</p>
+<pre class="brush:golang;gutter:true;">
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("hello, world.")
+}
+</pre>
+<p>使用<code>go</code>工具运行这段代码：</p>
+<pre class="brush:bash;gutter:false;">
+$ go run hello.go
+hello, world.
+</pre>
+<p>看到<code>hello.worlds.</code>则表示Go安装成功。</p>
+<p>更详尽的安装信息请参考这个链接：<a href="http://godoc.golangtc.com/doc/install" target="_blank">http://godoc.golangtc.com/doc/install</a></p>
+
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+        本条目发布于<time class="entry-date">2014年09月01日</time>。</footer><!-- .entry-meta -->
+</article><!-- #post -->
+                </div><!-- #content -->
+            </div><!-- #primary -->
+      </div><!-- #main .wrapper -->
+        <footer id="colophon" role="contentinfo">
+            <div class="site-info">
+                <a href="http://t.qq.com/icyfire" title="腾讯微博">@icyfire</a>
+            </div><!-- .site-info -->
+        </footer><!-- #colophon -->
+  </div><!-- #page -->
+<script type='text/javascript' src='/javascripts/sh/shCore.js'></script>
+<script type='text/javascript' src='/javascripts/sh/shAutoloader.js'></script>
+<script type='text/javascript' src='/javascripts/navigation.js?ver=1.0'></script>
+<script type="text/javascript">
+SyntaxHighlighter.autoloader(
+  'js jscript javascript  /javascripts/sh/shBrushJScript.js',
+  'php  /javascripts/sh/shBrushPhp.js',
+  'bash  /javascripts/sh/shBrushBash.js',
+  'text  /javascripts/sh/shBrushPlain.js',
+  'plain  /javascripts/sh/shBrushPlain.js',
+  'golang  /javascripts/sh/shBrushGolang.js'
+);
+ 
+SyntaxHighlighter.all();
+</script>
+</body>
+</html>
