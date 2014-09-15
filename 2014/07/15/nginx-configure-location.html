@@ -63,11 +63,10 @@
         <td>server, location</td>
     </tr>
 </table>
-<p>Nginx的location指令根据请求的URI设置对应的配置。</p>
+<p>Nginx的location指令根据请求的URI使用对应的配置。</p>
 <h3>配置</h3>
-<p>location可以用<b>前缀字符串（prefix string）</b>定义，也可以用<b>正则表达式（regular expression）</b>定义。</p>
-<p></p>
-<p>例如我们访问<code>http://www.example.com/asset/img/icon.png</code>。那么对应的URI则是<code>/asset/img/icon.png</code>。那么前缀字符串则是从<code>/</code>开始到后面任意的字符。例如<code>/</code>是前缀字符串，<code>/asset/</code>是前缀字符串，<code>/asset/img/</code>也是前缀字符串，以此类推。以下面几个配置为例:</p>
+<p>location的uri参数可以用<b>前缀字符串（prefix string）</b>定义，也可以用<b>正则表达式（regular expression）</b>定义。</p>
+<p>前缀字符串是指从URI最左边开始进行匹配的字符串。例如我们访问<code>http://www.example.com/asset/img/icon.png</code>。那么对应的URI则是<code>/asset/img/icon.png</code>。那么从<code>/</code>开始到后面任意的字符都可以匹配到这个URI。以下面几个配置为例:</p>
 <div class="bs-example">
     <pre class="brush:plain;gutter:true;">
         location / {
@@ -84,7 +83,7 @@
     </pre>
 </div>
 <div class="highlight">
-3个配置事实上都能匹配到上面那个URI。但是最终会采用哪个，后面再细说。
+我们拿<code>/</code>、<code>/asset/</code>和<code>/asset/img/</code>这三个前缀字符串去匹配<code>/asset/img/icon.png</code>，都能匹配成功。但是最终会采用哪个，则有一套规则，后面再细说。
 </div>
 
 <p>至于正则表达式，则很好理解，就是使用正则表达式去匹配URI，而要使用正则表达式去匹配则需要用到了<code>~</code>和<code>~*</code>这两个通配符。其中<code>~</code>表示大小写敏感，而<code>~*</code>表示大小写不敏感。</p>

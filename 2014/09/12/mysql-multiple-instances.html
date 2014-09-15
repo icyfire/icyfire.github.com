@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title> Mysql —— 多实例配置 -  礁湖星云</title>
+    <meta name="description" content="Mysql多实例的配置方法。">
+    <meta name="viewport" content="width=device-width">
+    <link rel="canonical" href="/2014/09/12/mysql-multiple-instances.html">
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shCoreRDark.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shThemeRDark.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/doc.min.css">
+    <!--[if lt IE 9]>
+    <script src="/javascript/html5.js"></script>
+    <![endif]-->
+</head>
+<body class="home blog logged-in admin-bar no-customize-support custom-background custom-font-enabled single-author">
+    <div id="page" class="hfeed site">
+        <header id="masthead" class="site-header" role="banner">
+            <hgroup>
+                <h1 class="site-title"><a href="http://icyfire.github.com/" title="礁湖星云" rel="home">礁湖星云</a></h1>
+                <h2 class="site-description">Just another GitHub Pages</h2>
+            </hgroup>
+            <nav id="site-navigation" class="main-navigation" role="navigation">
+                <h3 class="menu-toggle">菜单</h3>
+                <a class="assistive-text" href="#content" title="跳至内容">跳至内容</a>
+                <div class="nav-menu">
+                    <ul>
+                      <li class="current_page_item"><a href="http://icyfire.github.com/" title="首页">首页</a></li>
+                      <!--<li class="page_item page-item-2"><a href="http://www.icyfire.me/sample-page/">Sample Page</a></li>-->
+                    </ul>
+                </div>
+            </nav><!-- #site-navigation -->
+            <a href="http://www.icyfire.me/"><img src="/images/2013/07/cherry.jpg" width="940" height="198" alt="" /></a>
+        </header><!-- #masthead -->
+        <div id="main" class="wrapper">
+            <div id="primary" class="site-content">
+                <div id="content" role="main">
+                    <article class="post type-post status-publish format-standard hentry">
+    <header class="entry-header">
+        <h1 class="entry-title">
+            Mysql —— 多实例配置
+        </h1>
+    </header><!-- .entry-header -->
+    <div class="entry-content">
+        <h3>概述</h3>
+<p>由于一些测试或者开发上的需要，我们可能需要多个的Mysql服务，但是在多个服务器上部署Mysql无疑成本太高，幸好Mysql提供了一个在一台服务器上运行多个mysql实例的工具：<code>mysqld_multi</code>。这个工具可以管理多个mysqld进程，而这些进程监听在不同的socket文件和端口上。通过这个工具，我们还可以启动和停止这些mysqld进程，也可以简单获取到它们的运行状态。</p>
+
+<h3>配置</h3>
+<p>要<code>mysqld_multi</code>工作，我们需要对mysql的配置文件进行修改。假设我们已经在Linux下安装好了Mysql（以我做试验的机器为例，Mysql安装在<code>/usr/local/services/mysql</code>下，配置文件<code>my.cnf</code>放在<code>/etc</code>下）。</p>
+<p>首先我们需要添加一个配置组：<code>[mysqld_multi]</code>：</p>
+<pre class="brush:text;gutter:false;">
+[mysqld_multi]
+mysqld     = /usr/local/services/mysql/bin/mysqld_safe
+mysqladmin = /usr/local/services/mysql/bin/mysqladmin
+user       = multi_admin
+password   = multi_pass
+</pre>
+<p>这些配置主要让<code>mysqld_multi</code>能管理mysqld进程，包括启动、停止以及报告状态等。<code>user</code>和<code>password</code>用来停止mysqld服务，我们需要对每个实例添加这个帐号，并赋予<code>SHUTDOWN</code>权限（这一步我们后面再进行操作）。</p>
+<p>然后我们需要为每个mysqld实例添加一个配置，例如我们需要运行两个实例：</p>
+<pre class="brush:text;gutter:false;">
+[mysqld2]
+socket     = /tmp/mysql.sock2
+port       = 3307
+pid-file   = /tmp/nmysqld2.pid
+datadir    = /usr/local/services/mysql/data2
+user       = mysql
+
+[mysqld3]
+socket     = /tmp/mysql.sock3
+port       = 3308
+pid-file   = /tmp/mysqld3.pid
+datadir    = /usr/local/services/mysql/data3
+user       = mysql
+</pre>
+<p>每一个实例我们需要增加一个<code>[mysqld<em>N</em>]</code>的配置。<code><em>N</em></code>是一个数字，从1开始，用来标识每个实例，<code>mysqld_multi</code>通过这个数字编号可以具体的管理到每个实例。</p>
+<p>我们需要为每个实例配置不同的<code>socket、port和pid-file</code>。同时，我们也需要为每个实例配置不同的<code>datadir</code>，我们通过<code>mysql_install_db</code>命令来为每个实例创建<code>datadir</code>：</p>
+<pre class="brush:bash;gutter:false;">
+# mysql_install_db --user=mysql --datadir=/usr/local/services/mysql/data2
+# mysql_install_db --user=mysql --datadir=/usr/local/services/mysql/data3
+</pre>
+<div class="bs-callout bs-callout-warning">
+    请确保配置里各参数的路径对mysql是可读写的，不然实例会启动不了。
+</div>
+<div class="bs-callout bs-callout-info">
+    <code>my.cnf</code>文件相关的配置方式，可以使用命令<code>mysqld_multi --example</code>获取更详细的信息。
+</div>
+
+<h3>管理</h3>
+<p>现在，我们可以启动我们的多个实例了：</p>
+<pre class="brush:bash;gutter:false;">
+# mysqld_multi start
+</pre>
+<p><code>mysqld_multi</code>会查找<code>my.cnf</code>里所有<code>[mysqld<em>N</em>]</code>的配置，并逐一进行启动。我们可以用以下命令来查看实例的运行状态：</p>
+<pre class="brush:bash;gutter:false;">
+# mysqld_multi report
+Reporting MySQL servers
+MySQL server from group: mysqld2 is running
+MySQL server from group: mysqld3 is running
+</pre>
+<div class="bs-callout bs-callout-info">
+    如果实例没有正常启动到，我们可以在启动时增加日志来查看失败的原因：<code># mysqld_multi --log=/tmp/multi_mysqld.log start</code>
+</div>
+<div class="bs-callout bs-callout-info">
+    如果想启动具体某个实例，我们只需要在启动时加上实例的编号即可：<code># mysqld_multi start 2</code>
+</div>
+<p>前面说到过，我们需要对每个实例添加一个具有<code>SHUTDOWN</code>权限的帐号，用于停止实例。以其中一个实例为例子，我们先登录实例：</p>
+<pre class="brush:bash;gutter:false;">
+# mysql -u root -S /tmp/mysql.sock2
+</pre>
+<p>然后添加帐号和权限：</p>
+<pre class="brush:bash;gutter:false;">
+mysql&gt; GRANT SHUTDOWN ON *.* TO 'multi_admin'@'localhost' IDENTIFIED BY 'multi_pass';
+mysql&gt; FLUSH PRIVILEGES;
+</pre>
+<p>所有实例的帐号权限都添加好后，我们就可以运行以下命令停止实例了：</p>
+<pre class="brush:bash;gutter:false;">
+# mysqld_multi stop
+</pre>
+<p>查看状态如下：</p>
+<pre class="brush:bash;gutter:false;">
+# mysqld_multi report
+Reporting MySQL servers
+MySQL server from group: mysqld2 is not running
+MySQL server from group: mysqld3 is not running
+</pre>
+<div class="bs-callout bs-callout-info">
+    同样的，我们可以指定需要停止的实例，只需要在命令加上实例的编号即可：<code># mysqld_multi stop 2</code>
+</div>
+
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+        本条目发布于<time class="entry-date">2014年09月12日</time>。</footer><!-- .entry-meta -->
+</article><!-- #post -->
+                </div><!-- #content -->
+            </div><!-- #primary -->
+      </div><!-- #main .wrapper -->
+        <footer id="colophon" role="contentinfo">
+            <div class="site-info">
+                <a href="http://t.qq.com/icyfire" title="腾讯微博">@icyfire</a>
+            </div><!-- .site-info -->
+        </footer><!-- #colophon -->
+  </div><!-- #page -->
+<script type='text/javascript' src='/javascripts/sh/shCore.js'></script>
+<script type='text/javascript' src='/javascripts/sh/shAutoloader.js'></script>
+<script type='text/javascript' src='/javascripts/navigation.js?ver=1.0'></script>
+<script type="text/javascript">
+SyntaxHighlighter.autoloader(
+  'js jscript javascript  /javascripts/sh/shBrushJScript.js',
+  'php  /javascripts/sh/shBrushPhp.js',
+  'bash  /javascripts/sh/shBrushBash.js',
+  'text  /javascripts/sh/shBrushPlain.js',
+  'plain  /javascripts/sh/shBrushPlain.js',
+  'golang  /javascripts/sh/shBrushGolang.js'
+);
+ 
+SyntaxHighlighter.all();
+</script>
+</body>
+</html>
