@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title> Elasticsearch + Logstash + Kibana日志管理方案浅析 -  礁湖星云</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="canonical" href="/2014/11/13/logstash-es-kibana.html">
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shCoreRDark.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shThemeRDark.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/doc.min.css">
+    <!--[if lt IE 9]>
+    <script src="/javascript/html5.js"></script>
+    <![endif]-->
+</head>
+<body class="home blog logged-in admin-bar no-customize-support custom-background custom-font-enabled single-author">
+    <div id="page" class="hfeed site">
+        <header id="masthead" class="site-header" role="banner">
+            <hgroup>
+                <h1 class="site-title"><a href="http://icyfire.github.com/" title="礁湖星云" rel="home">礁湖星云</a></h1>
+                <h2 class="site-description">Just another GitHub Pages</h2>
+            </hgroup>
+            <nav id="site-navigation" class="main-navigation" role="navigation">
+                <h3 class="menu-toggle">菜单</h3>
+                <a class="assistive-text" href="#content" title="跳至内容">跳至内容</a>
+                <div class="nav-menu">
+                    <ul>
+                      <li class="current_page_item"><a href="http://icyfire.github.com/" title="首页">首页</a></li>
+                      <!--<li class="page_item page-item-2"><a href="http://www.icyfire.me/sample-page/">Sample Page</a></li>-->
+                    </ul>
+                </div>
+            </nav><!-- #site-navigation -->
+            <a href="http://www.icyfire.me/"><img src="/images/2013/07/cherry.jpg" width="940" height="198" alt="" /></a>
+        </header><!-- #masthead -->
+        <div id="main" class="wrapper">
+            <div id="primary" class="site-content">
+                <div id="content" role="main">
+                    <article class="post type-post status-publish format-standard hentry">
+    <header class="entry-header">
+        <h1 class="entry-title">
+            Elasticsearch + Logstash + Kibana日志管理方案浅析
+        </h1>
+    </header><!-- .entry-header -->
+    <div class="entry-content">
+        <h2>概述</h2>
+<p>Elasticsearch + Logstash + Kibana（ELK）是一套开源的日志管理方案。</p>
+<ul>
+    <li><a href="http://logstash.net/" target="_blank">Logstash</a>：负责日志的收集，处理和储存。</li>
+    <li><a href="http://www.elasticsearch.org/overview/elasticsearch/" target="_blank">Elasticsearch</a>：负责日志检索和分析。</li>
+    <li><a href="http://www.elasticsearch.org/overview/kibana/" target="_blank">Kibana</a>：负责日志的可视化。</li>
+</ul>
+<p>三个软件的安装使用都非常简单，基本下载下来就可以使用了，没有繁琐的安装步骤。下面我会作一个简单的介绍，但不会深入去探讨。</p>
+<h2>Logstash</h2>
+<h3>依赖</h3>
+<p>Logstash唯一的依赖的Java运行环境，请确保Java已正确安装，最好安装较新的版本：</p>
+<pre class="brush:bash;gutter:false;">
+$ java -version
+java version "1.7.0_71"
+Java(TM) SE Runtime Environment (build 1.7.0_71-b14)
+Java HotSpot(TM) 64-Bit Server VM (build 24.71-b01, mixed mode)
+</pre>
+<h3>安装</h3>
+<p>下载和解压出来就能使用了，不需要安装：</p>
+<pre class="brush:bash;gutter:false;">
+$ wget https://download.elasticsearch.org/logstash/logstash/logstash-1.4.2.tar.gz
+$ tar zxvf logstash-1.4.2.tar.gz
+</pre>
+<h3>验证</h3>
+<pre class="brush:bash;gutter:false;">
+$ cd /path/to/logstash/
+$ bin/logstash -e 'input { stdin { } } output { stdout {} }'
+hello world
+2014-11-13T02:46:46.340+0000 linux hello world
+</pre>
+<p><code>-e</code>表示直接从命令行输入配置文件,<code>input</code>表示输入,<code>output</code>表示输出。上面我们使用的是标准输入和标准输出作为logstash的输入和输出。</p>
+<p>我们后面要做的是把输出存储到Elasticsearch。</p>
+<h2>Elasticsearch</h2>
+<h3>安装</h3>
+<p>同样的，Elasticsearch下载下来解压后即可使用：</p>
+<pre class="brush:bash;gutter:false;">
+$ wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.4.0.tar.gz
+$ tar zxvf elasticsearch-1.4.0.tar.gz
+</pre>
+<h3>启动服务</h3>
+<pre class="brush:bash;gutter:false;">
+$ cd elasticsearch-1.4.0
+$ bin/elasticsearch
+</pre>
+<p>Elasticsearch同样依赖于Java运行环境，而且要求1.7以上的版本，不然启动会报以下错误：</p>
+<pre class="brush:text;gutter:false;">
+Exception in thread "main" java.lang.UnsupportedClassVersionError: org/elasticsearch/bootstrap/Elasticsearch : Unsupported major.minor version 51.0
+        at java.lang.ClassLoader.defineClass1(Native Method)
+        at java.lang.ClassLoader.defineClassCond(ClassLoader.java:631)
+        at java.lang.ClassLoader.defineClass(ClassLoader.java:615)
+        at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:141)
+        at java.net.URLClassLoader.defineClass(URLClassLoader.java:283)
+        at java.net.URLClassLoader.access$000(URLClassLoader.java:58)
+        at java.net.URLClassLoader$1.run(URLClassLoader.java:197)
+        at java.security.AccessController.doPrivileged(Native Method)
+        at java.net.URLClassLoader.findClass(URLClassLoader.java:190)
+        at java.lang.ClassLoader.loadClass(ClassLoader.java:306)
+        at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:301)
+        at java.lang.ClassLoader.loadClass(ClassLoader.java:247)
+Could not find the main class: org.elasticsearch.bootstrap.Elasticsearch.  Program will exit.
+</pre>
+<p>正常的启动信息如下：</p>
+<pre class="brush:text;gutter:false;">
+[2014-11-12 18:04:14,250][INFO ][node                     ] [Thunderclap] version[1.4.0], pid[25882], build[bc94bd8/2014-11-05T14:26:12Z]
+[2014-11-12 18:04:14,251][INFO ][node                     ] [Thunderclap] initializing ...
+[2014-11-12 18:04:14,256][INFO ][plugins                  ] [Thunderclap] loaded [], sites []
+[2014-11-12 18:04:16,527][INFO ][node                     ] [Thunderclap] initialized
+[2014-11-12 18:04:16,528][INFO ][node                     ] [Thunderclap] starting ...
+[2014-11-12 18:04:16,820][INFO ][transport                ] [Thunderclap] bound_address {inet[/0:0:0:0:0:0:0:0:9300]}, publish_address {inet[/192.168.205.252:9300]}
+[2014-11-12 18:04:16,839][INFO ][discovery                ] [Thunderclap] elasticsearch/AWsqNT85SbytA3OYMKvekQ
+[2014-11-12 18:04:20,625][INFO ][cluster.service          ] [Thunderclap] new_master [Thunderclap][AWsqNT85SbytA3OYMKvekQ][linux][inet[/192.168.205.252:9300]], reason: zen-disco-join (elected_as_master)
+[2014-11-12 18:04:20,647][INFO ][http                     ] [Thunderclap] bound_address {inet[/0:0:0:0:0:0:0:0:9200]}, publish_address {inet[/192.168.205.252:9200]}
+[2014-11-12 18:04:20,647][INFO ][node                     ] [Thunderclap] started
+[2014-11-12 18:04:20,706][INFO ][gateway                  ] [Thunderclap] recovered [0] indices into cluster_state
+</pre>
+<h3>验证</h3>
+<p>可以直接通过HTTP协议访问Elasticsearch，默认端口为<code>9200</code>：</p>
+<pre class="brush:bash;gutter:false;">
+$ curl -X GET http://localhost:9200
+{
+  "status" : 200,
+  "name" : "Thunderclap",
+  "cluster_name" : "elasticsearch",
+  "version" : {
+    "number" : "1.4.0",
+    "build_hash" : "bc94bd81298f81c656893ab1ddddd30a99356066",
+    "build_timestamp" : "2014-11-05T14:26:12Z",
+    "build_snapshot" : false,
+    "lucene_version" : "4.10.2"
+  },
+  "tagline" : "You Know, for Search"
+}
+</pre>
+<p>Elasticsearch更多的用法可以看安装目录下的<code>README.textile</code>文件。</p>
+<p>下面我先把展示界面安装好。</p>
+<h2>Kibana</h2>
+<h3>安装</h3>
+<pre class="brush:bash;gutter:false;">
+wget https://download.elasticsearch.org/kibana/kibana/kibana-3.1.2.tar.gz
+tar zxvf kibana-3.1.2.tar.gz 
+</pre>
+<h3>配置</h3>
+<p>然后我们需要一个web server作为容器，这里我使用nginx。配置nginx文件：</p>
+<pre class="brush:text;gutter:false;">
+server {
+    listen       80;
+    server_name  kibana;
+    root   /path/to/kibana/;
+    index  index.html;
+
+}
+</pre>
+<p>配置host并访问：http://kibana/。由于访问Elasticsearch服务出错，所以会出现以下界面：</p>
+<p><img src="/images/2014/11/13/kibana_01.jpg" /></p>
+<p>我们修改Kibana安装目录下的配置文件<code>config.js</code>：</p>
+<pre class="brush:text;gutter:false;">
+elasticsearch: "http://localhost:9200",
+</pre>
+<p>再次访问：</p>
+<p><img src="/images/2014/11/13/kibana_02.jpg" /></p>
+<p>然后我们修改默认的显示面板为logstash：</p>
+<pre class="brush:bash;gutter:false;">
+$ cd /path/to/kibana/app/dashboards
+$ mv default.json default_origin.json 
+$ mv logstash.json default.json
+</pre>
+<p>再访问：</p>
+<p><img src="/images/2014/11/13/kibana_03.jpg" /></p>
+<h2>Elasticsearch + Logstash + Kibana</h2>
+<p>下面我们结合3者来做一个例子。我们通过Logstash收集Nginx的日志，并存储到Elasticsearch，最后用Kibana显示出来。</p>
+<p>首先我们配置Logstash，让它能收集Nginx的日志，并输出到Elasticsearch。假设我们的Nginx的access_log的格式为：</p>
+<pre class="brush:text;gutter:false;">
+log_format  main  '$remote_addr - $remote_user [$time_local] '
+                           '"$request" $status $body_bytes_sent '
+                           '"$http_referer" "$http_user_agent" ';
+</pre>
+<p>我们在Logstash的安装目录下创建配置文件<code>logstash.conf</code>，并输入以下内容：</p>
+<pre class="brush:text;gutter:false;">
+input {
+    file {
+        type =&gt; "nginx-access"
+        path =&gt; "/path/to/nginx/access.log"
+    }
+}
+
+filter {
+    grok {
+        type =&gt; "nginx-access"
+        match =&gt; {"message" =&gt; "%{IPORHOST:source_ip} - %{USERNAME:remote_user} \[%{HTTPDATE:timestamp}\] %{QS:request} %{INT:status} %{INT:body_bytes_sent} %{QS:http_referer} %{QS:http_user_agent}"}
+    }
+}
+
+output {
+    elasticsearch { host =&gt; localhost }
+}
+</pre>
+<p>我们可以看到<code>input</code>设为file，<code>output</code>设为elasticsearch，然后我们还用到了<code>filter</code>，它的作用是用来对输入的日志进行过滤处理。</p>
+<p>然后我们通过这个配置文件来启动Logstash：</p>
+<pre class="brush:bash;gutter:false;">
+$ bin/logstash -f logstash.conf
+</pre>
+<p>等Nginx运行了一段时间后，我们再访问Kibana：</p>
+<p><img src="/images/2014/11/13/kibana_04.jpg" /></p>
+<p>我们可以看到已经一些图表和日志事件显示在Web界面上。</p>
+<h2>后话</h2>
+<p>通过对Kibana的定制和Elasticsearcht强大的检索功能，我们可以做出适合于我们系统的日志管理。上面只是作一个简单的了解。希望有时间作更深入的研究。</p>
+
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+        本条目发布于<time class="entry-date">2014年11月13日</time>。</footer><!-- .entry-meta -->
+</article><!-- #post -->
+                </div><!-- #content -->
+            </div><!-- #primary -->
+      </div><!-- #main .wrapper -->
+        <footer id="colophon" role="contentinfo">
+            <div class="site-info">
+                <a href="http://t.qq.com/icyfire" title="腾讯微博">@icyfire</a>
+            </div><!-- .site-info -->
+        </footer><!-- #colophon -->
+  </div><!-- #page -->
+<script type='text/javascript' src='/javascripts/sh/shCore.js'></script>
+<script type='text/javascript' src='/javascripts/sh/shAutoloader.js'></script>
+<script type='text/javascript' src='/javascripts/navigation.js?ver=1.0'></script>
+<script type="text/javascript">
+SyntaxHighlighter.autoloader(
+  'js jscript javascript  /javascripts/sh/shBrushJScript.js',
+  'php  /javascripts/sh/shBrushPhp.js',
+  'bash  /javascripts/sh/shBrushBash.js',
+  'text  /javascripts/sh/shBrushPlain.js',
+  'plain  /javascripts/sh/shBrushPlain.js',
+  'golang  /javascripts/sh/shBrushGolang.js'
+);
+ 
+SyntaxHighlighter.all();
+</script>
+</body>
+</html>
