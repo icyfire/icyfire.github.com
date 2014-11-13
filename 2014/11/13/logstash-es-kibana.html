@@ -167,6 +167,10 @@ server {
 <pre class="brush:text;gutter:false;">
 elasticsearch: "http://localhost:9200",
 </pre>
+<p>然后修改Elasticsearch的配置文件<code>elasticsearch.yml</code>，增加以下配置：</p>
+<pre class="brush:text;gutter:false;">
+http.cors.enabled: true
+</pre>
 <p>再次访问：</p>
 <p><img src="/images/2014/11/13/kibana_02.jpg" /></p>
 <p>然后我们修改默认的显示面板为logstash：</p>
