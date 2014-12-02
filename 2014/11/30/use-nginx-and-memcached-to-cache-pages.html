@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title> 使用Nginx和Memcached实现页面缓存 -  礁湖星云</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="canonical" href="/2014/11/30/use-nginx-and-memcached-to-cache-pages.html">
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shCoreRDark.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shThemeRDark.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/doc.min.css">
+    <!--[if lt IE 9]>
+    <script src="/javascript/html5.js"></script>
+    <![endif]-->
+</head>
+<body class="home blog logged-in admin-bar no-customize-support custom-background custom-font-enabled single-author">
+    <div id="page" class="hfeed site">
+        <header id="masthead" class="site-header" role="banner">
+            <hgroup>
+                <h1 class="site-title"><a href="http://icyfire.github.com/" title="礁湖星云" rel="home">礁湖星云</a></h1>
+                <h2 class="site-description">Just another GitHub Pages</h2>
+            </hgroup>
+            <nav id="site-navigation" class="main-navigation" role="navigation">
+                <h3 class="menu-toggle">菜单</h3>
+                <a class="assistive-text" href="#content" title="跳至内容">跳至内容</a>
+                <div class="nav-menu">
+                    <ul>
+                      <li class="current_page_item"><a href="http://icyfire.github.com/" title="首页">首页</a></li>
+                      <!--<li class="page_item page-item-2"><a href="http://www.icyfire.me/sample-page/">Sample Page</a></li>-->
+                    </ul>
+                </div>
+            </nav><!-- #site-navigation -->
+            <a href="http://www.icyfire.me/"><img src="/images/2013/07/cherry.jpg" width="940" height="198" alt="" /></a>
+        </header><!-- #masthead -->
+        <div id="main" class="wrapper">
+            <div id="primary" class="site-content">
+                <div id="content" role="main">
+                    <article class="post type-post status-publish format-standard hentry">
+    <header class="entry-header">
+        <h1 class="entry-title">
+            使用Nginx和Memcached实现页面缓存
+        </h1>
+    </header><!-- .entry-header -->
+    <div class="entry-content">
+        <h3>概述</h3>
+<p>页面静态化是前端优化的一个重要方法，一般采用生成静态文件的方式实现。这里我尝试采用另外一种方式去实现，就是直接把页面用Memcached进行缓存，然后通过Nginx直接去访问。</p>
+<p>采用Memcached缓存页面的好处是什么呢？</p>
+<ul>
+    <li>1. 由于页面是缓存在内存里，所以减少了系统的I/O操作。</li>
+    <li>2. 可以直接利用Memcached的分布式特性。</li>
+    <li>3. 可以直接利用缓存的过期时间，方便对页面的过期时间进行处理。</li>
+    <li>4. 部署简单，生成静态文件还需要考虑文件系统的问题。</li>
+</ul>
+<p>当然缺点也很明显，首先是对内存的性能依赖很大，其次由于页面直接放内存里，一旦Memcached挂掉或者服务器重启，内存里存储的页面就会全部消失。</p>
+
+<h3>问题来了</h3>
+<p>Nginx内置了Memcached模块<a href="http://nginx.org/en/docs/http/ngx_http_memcached_module.html" target="_blank">ngx_http_memcached_module</a>，可以很轻松的实现对Memcached的访问。我这里做一个示例，通过PHP缓存我们邮轮网站的首页，然后通过URL<code>http://dev.hwtrip.com/cache/index.html</code>去访问这个页面。</p>
+<p>首先，我们对Nginx进行配置:</p>
+<pre class="brush:text;gutter:false;">
+server {
+    listen       80;
+    server_name  dev.hwtrip.com;
+
+    location ^~ /cache/ {
+        set            $memcached_key $request_uri;
+        memcached_pass 127.0.0.1:11211;
+    }
+
+    error_page     404 502 504 = @fallback;
+}
+
+location @fallback {
+    proxy_pass     http://backend;
+}
+</pre>
+<p>这个配置把所有请求URI前缀为<code>/cache/</code>的访问用Memcached模块进行内容的读取，同时使用请求URI作为Memcached的key。当缓存没有命中或者出错时，我们使用@fallback进行处理（例如访问实际的应用并重新写入缓存），这个不在这里展开了。</p>
+<p>然后，我们用简单的代码把页面写进Memcached里：</p>
+<pre class="brush:php;gutter:false;">
+$htmlContent = file_get_contents('http://youlun.hwtrip.com');
+
+$memcached = new Memcache();
+$memcached-&gt;addServer('127.0.0.1', 11211);
+$memcached-&gt;set('/cache/index.html', $htmlContent);
+</pre>
+<p>注意写缓存时的key，由于我们访问的URL是<code>http://dev.hwtrip.com/cache/index.html</code>，所以写进Memcached的key就是URI<code>/cache/index.html</code>。</p>
+<p>执行完代码后，我们访问下<code>http://dev.hwtrip.com/cache/index.html</code>：</p>
+<p><img src="/images/2014/11/30/ngx_memcached_00.jpg" alt="" /></p>
+<p>可以看到，通过nginx很容易实现对Memcached进行访问，但是这离我们缓存页面的目标还差很多，因为有两个大问题还没有解决。</p>
+<ul>
+    <li>首先，我们没有用到Memcached的分布式，我们上面的示例只是对一个Memcached的节点进行访问。</li>
+    <li>其次，通过这种方式返回的页面的没有携带浏览器缓存相关的响应头。没有这些响应头，页面就不能缓存在浏览器了，会导致每次访问都会去请求服务器。</li>
+</ul>
+<h3>使Ngxin支持Memcached的分布式访问</h3>
+<p>Nginx可以通过<code>upstream</code>支持访问多个Memcached服务节点：</p>
+<pre class="brush:text;gutter:false;">
+upstream memcached {
+    server 127.0.0.1:11211;
+    server 127.0.0.1:11212;
+    server 127.0.0.1:11213;
+    server 127.0.0.1:11214;
+}
+
+server {
+    listen       80;
+    server_name  dev.hwtrip.com;
+
+    location ^~ /cache/ {
+        set            $memcached_key $request_uri;
+        memcached_pass memcached;
+    }
+
+    error_page     404 502 504 = @fallback;
+}
+
+......
+</pre>
+<p>但是，upstream采用的是<code>round-robin</code>的轮询方式，而我们知道PHP的php_memcache扩展使用的是一致性哈希算法进行Memcached服务节点的选择。于是乎，我们在前端用PHP缓存的页面，通过nginx不一定能访问到。所以我们必须让Nginx也能通过一致性哈希算法去选择节点。</p>
+<p>这里我们用到了<a href="http://wiki.nginx.org/HttpUpstreamConsistentHash" target="_blank">ngx_http_upstream_consistent_hash</a>这个第三方模块，这个模块实现了跟<code>php_memcache</code>这个PHP扩展一样的一致性哈希算法。</p>
+<p>重新编译Nginx，添加好这个模块，我们修改下Nginx的配置文件的<code>upstream</code>部分：</p>
+<pre class="brush:text;gutter:false;">
+upstream memcached {
+    consistent_hash $request_uri;
+    server 127.0.0.1:11211;
+    server 127.0.0.1:11212;
+    server 127.0.0.1:11213;
+    server 127.0.0.1:11214;
+}
+
+......
+</pre>
+<p>我们修改下缓存页面的示例PHP代码：</p>
+<pre class="brush:php;gutter:false;">
+$htmlContent = file_get_contents('http://youlun.hwtrip.com');
+
+$memcached = new Memcache();
+$memcached-&gt;addServer('127.0.0.1', 11211);
+$memcached-&gt;addServer('127.0.0.1', 11212);
+$memcached-&gt;addServer('127.0.0.1', 11213);
+$memcached-&gt;addServer('127.0.0.1', 11214);
+
+for ($i = 1; $i &lt; 10; $i ++) { 
+    $cacheIns-&gt;set("/cache/index$i.html", $htmlContent);
+}
+</pre>
+<p>通过设置不同的key，我们测试下Nginx是否能获取到正确的内容。经测试，PHP设置的缓存，用Nginx都能正常访问到。</p>
+<h3>返回浏览器可缓存的页面</h3>
+<p>这是第一个例子里Nginx返回的页面的响应头：</p>
+<p><img src="/images/2014/11/30/ngx_memcached_01.jpg" alt="" /></p>
+<p>可以看到没有返回任何缓存相关的响应头，这样每次访问，浏览器都会去请求服务器，虽然服务器有缓存，但明显不符合我们对性能优化的追求。不过就算Nginx返回了相关的响应头，然后我们请求的时候包含了<code>If-Modified-Since</code>这个请求头，Ngxin的memcached模块也不会去判断这个请求有没有过期以及返回<code>304 Not Modified</code>。所以我们需要实现两件事，第一是能让Ngxin返回正确的响应头，第二是能让Nginx判断请求的资源是否过期，并正确返回响应码。</p>
+<p>这里，我们借助另外一个Nginx的第三方模块：<a href="https://github.com/bpaquet/ngx_http_enhanced_memcached_module" target="_blank">gx_http_enhanced_memcached_module</a>。这个模块提供了很多功能，大家可以到它的github页面上了解。这里我们主要用到它的两个功能：</p>
+<ul>
+    <li>Send custom http headers, like Content-Type, Last-Modified. Http headers are stored in memcached, with your body data.</li>
+    <li>Reply 304 Not Modified for request with If-Modified-Since headers and content with Last-Modified in cache</li>
+</ul>
+<p>再次重新编译安装Nginx，添加好<code>gx_http_enhanced_memcached_module</code>模块，我们再次对Nginx的配置文件进行修改：</p>
+<pre class="brush:text;gutter:false;">
+upstream memcached {
+    consistent_hash $request_uri;
+    server 127.0.0.1:11211;
+    server 127.0.0.1:11212;
+    server 127.0.0.1:11213;
+    server 127.0.0.1:11214;
+}
+
+server {
+    listen       80;
+    server_name  dev.hwtrip.com;
+
+    location ^~ /cache/ {
+        set                     $enhanced_memcached_key $request_uri;
+        enhanced_memcached_pass memcached;
+    }
+
+    error_page     404 502 504 = @fallback;
+}
+
+......
+</pre>
+<p>我们再次修改示例PHP文件：</p>
+<pre class="brush:php;gutter:false;">
+$htmlContent = file_get_contents('http://youlun.hwtrip.com');
+
+// 页面过期时间
+$expiresTime = 60 * 5;
+
+// Last-Modified头设置的时间
+$lastModified = gmdate('D, d M Y H:i:s \G\M\T', time());
+
+// Expires头设置的时间
+$expires = gmdate('D, d M Y H:i:s \G\M\T', time() + $expiresTime);
+
+// 最终缓存的内容
+$cacheContent = "EXTRACT_HEADERS
+Content-Type: text/html
+Cache-Control:max-age=$expiresTime
+Expires:$expires
+Last-Modified:$lastModified
+
+$htmlContent";
+    
+// 获取memcache实例
+$memcached = new Memcache();
+$memcached-&gt;addServer('127.0.0.1', 11211);
+$memcached-&gt;addServer('127.0.0.1', 11212);
+$memcached-&gt;addServer('127.0.0.1', 11213);
+$memcached-&gt;addServer('127.0.0.1', 11214);
+
+// 写入缓存
+$memcached-&gt;set('/cache/index.html', $cacheContent, $expiresTime);
+</pre>
+<p>这次我们设置了缓存的过期时间，并在缓存内容前面添加了一些响应头。<code>ngx_http_enhanced_memcached_module</code>模块<code>EXTRACT_HEADERS</code>这个标记去识别并记录响应头，详情请看github页面的说明。</p>
+<p>重新写入缓存后，我们再次访问页面：</p>
+<p><img src="/images/2014/11/30/ngx_memcached_02.jpg" alt="" /></p>
+<p>可以看到缓存相关的响应头都已正确返回。</p>
+<h3>后话</h3>
+<p>至此，我们已经简单的完成了使用Nginx和Memcached对缓存页面的访问，但这只是后端的简单实现，在前端还需要实现对页面缓存的管理等等的工作。</p>
+
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+        本条目发布于<time class="entry-date">2014年11月30日</time>。</footer><!-- .entry-meta -->
+</article><!-- #post -->
+                </div><!-- #content -->
+            </div><!-- #primary -->
+      </div><!-- #main .wrapper -->
+        <footer id="colophon" role="contentinfo">
+            <div class="site-info">
+                <a href="http://t.qq.com/icyfire" title="腾讯微博">@icyfire</a>
+            </div><!-- .site-info -->
+        </footer><!-- #colophon -->
+  </div><!-- #page -->
+<script type='text/javascript' src='/javascripts/sh/shCore.js'></script>
+<script type='text/javascript' src='/javascripts/sh/shAutoloader.js'></script>
+<script type='text/javascript' src='/javascripts/navigation.js?ver=1.0'></script>
+<script type="text/javascript">
+SyntaxHighlighter.autoloader(
+  'js jscript javascript  /javascripts/sh/shBrushJScript.js',
+  'php  /javascripts/sh/shBrushPhp.js',
+  'bash  /javascripts/sh/shBrushBash.js',
+  'text  /javascripts/sh/shBrushPlain.js',
+  'plain  /javascripts/sh/shBrushPlain.js',
+  'golang  /javascripts/sh/shBrushGolang.js'
+);
+ 
+SyntaxHighlighter.all();
+</script>
+</body>
+</html>
