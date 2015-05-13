@@ -479,7 +479,7 @@ img.wp-smiley,
 
 /* Body, links, basics */
 html {
-    font-size: 87.5%;
+    font-size: 100%;
 }
 body {
     font-size: 14px;
@@ -489,7 +489,7 @@ body {
     color: #444;
 }
 body.custom-font-enabled {
-    font-family: "Open Sans", Helvetica, Arial, sans-serif;
+    font-family: "Microsoft YaHei", Helvetica, Arial, sans-serif;
 }
 a {
     outline: none;
@@ -793,8 +793,8 @@ article.sticky .featured-post {
 .entry-summary p,
 .comment-content p,
 .mu_register p {
-    margin: 0 0 24px;
-    margin: 0 0 1.714285714rem;
+    /*margin: 0 0 24px;
+    margin: 0 0 1.714285714rem;*/
     line-height: 1.714285714;
 }
 .entry-content ol,
@@ -1431,7 +1431,7 @@ img#wpstats {
     .site {
         margin: 0 auto;
         max-width: 960px;
-        max-width: 68.571428571rem;
+        /*max-width: 68.571428571rem;*/
         overflow: hidden;
     }
     .site-content {
@@ -1533,8 +1533,7 @@ img#wpstats {
         display: none;
     }
     .entry-header .entry-title {
-        font-size: 22px;
-        font-size: 1.571428571rem;
+        font-size: 2.2rem;
     }
     #respond form input[type="text"] {
         width: 46.333333333%;
@@ -1724,4 +1723,9 @@ img#wpstats {
         margin-left: 50px;
         margin-left: 3.57142857rem;
     }
+}
+
+#content {font-size: 16px;}
+.entry-content p {
+    font-size: 16px;
 }

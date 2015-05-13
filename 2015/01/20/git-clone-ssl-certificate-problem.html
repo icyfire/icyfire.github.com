@@ -59,7 +59,7 @@ fatal: HTTP request failed
 </pre>
 <p>应该是SSL证书的验证问题，我们可以通过环境变量把Git的SSL验证关掉来解决这个问题：</p>
 <pre class="brush:bash;gutter:false;">
-$ export GIT_SSL_NO_VERIFY = true
+$ export GIT_SSL_NO_VERIFY=true
 </pre>
 
     </div><!-- .entry-content -->
@@ -86,7 +86,9 @@ SyntaxHighlighter.autoloader(
   'bash  /javascripts/sh/shBrushBash.js',
   'text  /javascripts/sh/shBrushPlain.js',
   'plain  /javascripts/sh/shBrushPlain.js',
-  'golang  /javascripts/sh/shBrushGolang.js'
+  'golang  /javascripts/sh/shBrushGolang.js',
+  'html xml  /javascripts/sh/shBrushXml.js',
+  'css  /javascripts/sh/shBrushCss.js'
 );
  
 SyntaxHighlighter.all();
