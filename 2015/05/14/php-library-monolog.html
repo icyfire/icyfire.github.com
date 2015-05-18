@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title> 【PHP类库】Monolog - Logging for PHP 5.3+ -  礁湖星云</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="canonical" href="/2015/05/14/php-library-monolog.html">
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shCoreRDark.css">
+    <link rel="stylesheet" href="/stylesheets/sh/shThemeRDark.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/doc.min.css">
+    <!--[if lt IE 9]>
+    <script src="/javascript/html5.js"></script>
+    <![endif]-->
+</head>
+<body class="home blog logged-in admin-bar no-customize-support custom-background custom-font-enabled single-author">
+    <div id="page" class="hfeed site">
+        <header id="masthead" class="site-header" role="banner">
+            <hgroup>
+                <h1 class="site-title"><a href="http://icyfire.github.com/" title="礁湖星云" rel="home">礁湖星云</a></h1>
+                <h2 class="site-description">Just another GitHub Pages</h2>
+            </hgroup>
+            <nav id="site-navigation" class="main-navigation" role="navigation">
+                <h3 class="menu-toggle">菜单</h3>
+                <a class="assistive-text" href="#content" title="跳至内容">跳至内容</a>
+                <div class="nav-menu">
+                    <ul>
+                      <li class="current_page_item"><a href="http://icyfire.github.com/" title="首页">首页</a></li>
+                      <!--<li class="page_item page-item-2"><a href="http://www.icyfire.me/sample-page/">Sample Page</a></li>-->
+                    </ul>
+                </div>
+            </nav><!-- #site-navigation -->
+            <a href="http://www.icyfire.me/"><img src="/images/2013/07/cherry.jpg" width="940" height="198" alt="" /></a>
+        </header><!-- #masthead -->
+        <div id="main" class="wrapper">
+            <div id="primary" class="site-content">
+                <div id="content" role="main">
+                    <article class="post type-post status-publish format-standard hentry">
+    <header class="entry-header">
+        <h1 class="entry-title">
+            【PHP类库】Monolog - Logging for PHP 5.3+
+        </h1>
+    </header><!-- .entry-header -->
+    <div class="entry-content">
+        <p><a href="https://github.com/Seldaek/monolog" target="_blank">Monolog</a>是PHP的一个日志类库。相比于其他的日志类库，它有以下的特点：</p>
+<ul>
+    <li>功能强大。可以把日志发送到文件、socket、邮箱、数据库和各种web services。</li>
+    <li>遵循<a href="https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md" target="_blank">PSR3</a>的接口规范。可以很轻易的替换成其他遵循同一规范的日志类库。</li>
+    <li>良好的扩展性。通过<code>Handler</code>、<code>Formatter</code>和<code>Processor</code>这几个接口，可以对Monolog类库进行各种扩展和自定义。</li>
+</ul>
+<h2>基本用法</h2>
+<p>安装最新版本：</p>
+<div class="highlight">composer require monolog/monolog</div>
+<div class="bs-callout bs-callout-info">
+要求PHP版本为5.3以上。
+</div>
+<pre class="brush:php;gutter:false;">
+&lt;?php
+
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
+// 创建日志频道
+$log = new Logger('name');
+$log-&gt;pushHandler(new StreamHandler('path/to/your.log', Logger::WARNING));
+
+// 添加日志记录
+$log-&gt;addWarning('Foo');
+$log-&gt;addError('Bar');
+</pre>
+<h2>核心概念</h2>
+<p>每一个<code>Logger</code>实例都包含一个频道名(channel)和handler的堆栈。当你添加一条记录时，记录会依次通过handler堆栈的处理。而每个handler也可以决定是否把记录传递到下一个堆栈里的下一个handler。</p>
+<p>通过handler，我们可以实现一些复杂的日志操作。例如我们把<code>StreamHandler</code>放在堆栈的最下面，那么所有的日志记录最终都会写到硬盘文件里。同时我们把<code>MailHandler</code>放在堆栈的最上面，通过设置日志等级把错误日志通过邮件发送出去。Handler里有个<code>$bubble</code>属性，这个属性定义了handler是否拦截记录不让它流到下一个handler。所以如果我们把<code>MailHandler</code>的<code>$bubble</code>参数设置为<code>false</code>，则出现错误日志时，日志会通过<code>MailHandler</code>发送出去，而不会经过<code>StreamHandler</code>写到硬盘上。</p>
+<p><code>Logger</code>可以创建多个，每个都可以定义自己的频道名和handler堆栈。handler可以在多个<code>Logger</code>中共享。频道名会反映在日志里，方便我们查看和过滤日志记录。</p>
+<p>如果没有指定日志格式（Formatter），Handler会使用默认的Formatter。</p>
+<p>日志的等级不能自定义，目前使用的是<a href="http://tools.ietf.org/html/rfc5424" target="_blank">RFC 5424</a>里定义的8个等级：debug、info、notice、warning、error、critical、alert和emergency。如果对日志记录有其他的需求，可以通过Processo对日志记录添加内容。</p>
+<h2>日志等级</h2>
+<ul>
+    <li><strong>DEBUG</strong> (100): 详细的debug信息。</li>
+    <li><strong>INFO</strong> (200): 关键事件。</li>
+    <li><strong>NOTICE</strong> (250): 普通但是重要的事件。</li>
+    <li><strong>WARNING</strong> (300): 出现非错误的异常。</li>
+    <li><strong>ERROR</strong> (400): 运行时错误，但是不需要立刻处理。</li>
+    <li><strong>CRITICA</strong>L (500): 严重错误。</li>
+    <li><strong>ALERT</strong> (550): 警告时间，需要立刻进行处理。</li>
+    <li><strong>EMERGENCY</strong> (600): 系统不可用。</li>
+</ul>
+<h2>用法详解</h2>
+<h3>多个handler</h3>
+<pre class="brush:php;gutter:false;">
+&lt;?php
+
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Monolog\Handler\FirePHPHandler;
+
+// 创建Logger实例
+$logger = new Logger('my_logger');
+// 添加handler
+$logger-&gt;pushHandler(new StreamHandler(__DIR__.'/my_app.log', Logger::DEBUG));
+$logger-&gt;pushHandler(new FirePHPHandler());
+
+// 开始使用
+$logger-&gt;addInfo('My logger is now ready');
+</pre>
+<p>第一步我们先创建一个<code>Logger</code>实例，传入的是频道名，这个频道名可以用于区分多个<code>Logger</code>实例。</p>
+<p>实例本身并不知道如何处理日志记录，它是通过handler进行处理的。handler可以设置多个，例如上面的例子设置了两个handler，可以对日志记录进行两种不同方式的处理。</p>
+<p>需要注意的是，由于handler是采用堆栈的方式保存，所以后面添加的handler位于栈顶，会首先被调用。</p>
+<h3>添加额外的数据</h3>
+<p>Monolog有两种方式对日志添加额外的信息。</p>
+<h4>使用上下文</h4>
+<p>第一个方法是使用$context参数，传入一个数组：</p>
+<pre class="brush:php;gutter:false;">
+&lt;?php
+
+$logger-&gt;addInfo('Adding a new user', array('username' =&gt; 'Seldaek'));
+</pre>
+<h4>使用processor</h4>
+<p>第二个方法是使用processor。processor可以是任何可调用的方法，这些方法把日志记录作为参数，然后经过处理修改<code>extra</code>部分后返回。</p>
+<pre class="brush:php;gutter:false;">
+&lt;?php
+
+$logger-&gt;pushProcessor(function ($record) {
+    $record['extra']['dummy'] = 'Hello world!';
+
+    return $record;
+});
+</pre>
+<div class="bs-callout bs-callout-info">
+Processor不一定要绑定在Logger实例上，也可以绑定到某个具体的handler上。使用handler实例的<code>pushProcessor</code>方法进行绑定。
+</div>
+<h3>频道的使用</h3>
+<p>使用频道名可以对日志进行分类，这在大型的应用上是很有用的。通过频道名，可以很容易的对日志记录进行刷选。</p>
+<p>例如我们想在同一个日志文件里记录不同模块的日志，我们可以把相同的handler绑定到不同的Logger实例上，这些实例使用不同的频道名：</p>
+<pre class="brush:php;gutter:false;">
+&lt;?php
+
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Monolog\Handler\FirePHPHandler;
+
+// 创建handler
+$stream = new StreamHandler(__DIR__.'/my_app.log', Logger::DEBUG);
+$firephp = new FirePHPHandler();
+
+// 创建应用的主要logger
+$logger = new Logger('my_logger');
+$logger-&gt;pushHandler($stream);
+$logger-&gt;pushHandler($firephp);
+
+// 通过不同的频道名创建一个用于安全相关的logger
+$securityLogger = new Logger('security');
+$securityLogger-&gt;pushHandler($stream);
+$securityLogger-&gt;pushHandler($firephp);
+</pre>
+<h3>Handler</h3>
+<p>Monolog内置很多很实用的handler，它们几乎囊括了各种的使用场景，这里介绍一些使用的：</p>
+<p><code>StreamHandler</code>：把记录写进PHP流，主要用于日志文件。</p>
+<p><code>SyslogHandler</code>：把记录写进syslog。</p>
+<p><code>ErrorLogHandler</code>：把记录写进PHP错误日志。</p>
+<p><code>NativeMailerHandler</code>：使用PHP的<a href="http://php.net/manual/en/function.mail.php" target="_blank">mail()</a>函数发送日志记录。</p>
+<p><code>SocketHandler</code>：通过socket写日志。</p>
+<pre class="brush:php;gutter:false;">
+&lt;?php
+
+use Monolog\Logger;
+use Monolog\Handler\SocketHandler;
+
+// Create the logger
+$logger = new Logger('my_logger');
+
+// Create the handler
+$handler = new SocketHandler('unix:///var/log/httpd_app_log.socket');
+$handler-&gt;setPersistent(true);
+
+// Now add the handler
+$logger-&gt;pushHandler($handler, Logger::DEBUG);
+
+// You can now use your logger
+$logger-&gt;addInfo('My logger is now ready');
+</pre>
+<p><code>AmqpHandler</code>：把记录写进兼容<a href="http://www.amqp.org/" target="_blank">amqp</a>协议的服务。</p>
+<p><code>BrowserConsoleHandler</code>：把日志记录写到浏览器的控制台。由于是使用浏览器的<code>console</code>对象，需要看浏览器是否支持。</p>
+<p><code>RedisHandler</code>：把记录写进Redis。</p>
+<p><code>MongoDBHandler</code>：把记录写进Mongo。</p>
+<p><code>ElasticSearchHandler</code>：把记录写到ElasticSearch服务。</p>
+<p><code>BufferHandler</code>：允许我们把日志记录缓存起来一次性进行处理。</p>
+<div class="bs-callout bs-callout-info">
+更多的Handler请看<a href="https://github.com/Seldaek/monolog#handlers" target="_blank">https://github.com/Seldaek/monolog#handlers</a>。
+</div>
+<h3>Formatter</h3>
+<p>同样的，这里介绍几个自带的Formatter：</p>
+<p><code>LineFormatter</code>：把日志记录格式化成一行字符串。</p>
+<p><code>HtmlFormatter</code>：把日志记录格式化成HTML表格，主要用于邮件。</p>
+<p><code>JsonFormatter</code>：把日志记录编码成JSON格式。</p>
+<p><code>LogstashFormatter</code>：把日志记录格式化成logstash的事件JSON格式。</p>
+<p><code>ElasticaFormatter</code>：把日志记录格式化成ElasticSearch使用的数据格式。</p>
+<div class="bs-callout bs-callout-info">
+更多的Formatter请看<a href="https://github.com/Seldaek/monolog#formatters" target="_blank">https://github.com/Seldaek/monolog#formatters</a>。
+</div>
+<h3>Processor</h3>
+<p>前面说过，Processor可以为日志记录添加额外的信息，Monolog也提供了一些很实用的processor：</p>
+<p><code>IntrospectionProcessor</code>：增加当前脚本的文件名和类名等信息。</p>
+<p><code>WebProcessor</code>：增加当前请求的URI、请求方法和访问IP等信息。</p>
+<p><code>MemoryUsageProcessor</code>：增加当前内存使用情况信息。</p>
+<p><code>MemoryPeakUsageProcessor</code>：增加内存使用高峰时的信息。</p>
+<div class="bs-callout bs-callout-info">
+更多的Processor请看<a href="https://github.com/Seldaek/monolog#processors" target="_blank">https://github.com/Seldaek/monolog#processors</a>。
+</div>
+<h2>扩展handler</h2>
+<p>Monolog内置了很多handler，但是并不是所有场景都能覆盖到，有时需要自己去定制handler。写一个handler并不难，只需要实现<code>Monolog\Handler\HandlerInterface</code>这个接口即可。</p>
+<p>下面这个例子实现了把日志记录写到数据库里。我们不需要把接口里的方法全部实现一次，可以直接使用Monolog提供的抽象类<code>AbstractProcessingHandler</code>进行继承，实现里面的<code>write</code>方法即可。</p>
+<pre class="brush:php;gutter:false;">
+&lt;?php
+
+use Monolog\Logger;
+use Monolog\Handler\AbstractProcessingHandler;
+
+class PDOHandler extends AbstractProcessingHandler
+{
+    private $initialized = false;
+    private $pdo;
+    private $statement;
+
+    public function __construct(PDO $pdo, $level = Logger::DEBUG, $bubble = true)
+    {
+        $this-&gt;pdo = $pdo;
+        parent::__construct($level, $bubble);
+    }
+
+    protected function write(array $record)
+    {
+        if (!$this-&gt;initialized) {
+            $this-&gt;initialize();
+        }
+
+        $this-&gt;statement-&gt;execute(array(
+            'channel' =&gt; $record['channel'],
+            'level' =&gt; $record['level'],
+            'message' =&gt; $record['formatted'],
+            'time' =&gt; $record['datetime']-&gt;format('U'),
+        ));
+    }
+
+    private function initialize()
+    {
+        $this-&gt;pdo-&gt;exec(
+            'CREATE TABLE IF NOT EXISTS monolog '
+            .'(channel VARCHAR(255), level INTEGER, message LONGTEXT, time INTEGER UNSIGNED)'
+        );
+        $this-&gt;statement = $this-&gt;pdo-&gt;prepare(
+            'INSERT INTO monolog (channel, level, message, time) VALUES (:channel, :level, :message, :time)'
+        );
+    }
+}
+</pre>
+<p>然后我们就可以使用它了：</p>
+<pre class="brush:php;gutter:false;">
+&lt;?php
+
+$logger-&gt;pushHandler(new PDOHandler(new PDO('sqlite:logs.sqlite'));
+
+// You can now use your logger
+$logger-&gt;addInfo('My logger is now ready');
+</pre>
+<h2>参考</h2>
+<p><a href="https://github.com/Seldaek/monolog" target="_blank">https://github.com/Seldaek/monolog</a></p>
+
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+        本条目发布于<time class="entry-date">2015年05月14日</time>。</footer><!-- .entry-meta -->
+</article><!-- #post -->
+                </div><!-- #content -->
+            </div><!-- #primary -->
+      </div><!-- #main .wrapper -->
+        <footer id="colophon" role="contentinfo">
+            <div class="site-info">
+                <a href="http://t.qq.com/icyfire" title="腾讯微博">@icyfire</a>
+            </div><!-- .site-info -->
+        </footer><!-- #colophon -->
+  </div><!-- #page -->
+<script type='text/javascript' src='/javascripts/sh/shCore.js'></script>
+<script type='text/javascript' src='/javascripts/sh/shAutoloader.js'></script>
+<script type='text/javascript' src='/javascripts/navigation.js?ver=1.0'></script>
+<script type="text/javascript">
+SyntaxHighlighter.autoloader(
+  'js jscript javascript  /javascripts/sh/shBrushJScript.js',
+  'php  /javascripts/sh/shBrushPhp.js',
+  'bash  /javascripts/sh/shBrushBash.js',
+  'text  /javascripts/sh/shBrushPlain.js',
+  'plain  /javascripts/sh/shBrushPlain.js',
+  'golang  /javascripts/sh/shBrushGolang.js',
+  'html xml  /javascripts/sh/shBrushXml.js',
+  'css  /javascripts/sh/shBrushCss.js'
+);
+ 
+SyntaxHighlighter.all();
+</script>
+</body>
+</html>

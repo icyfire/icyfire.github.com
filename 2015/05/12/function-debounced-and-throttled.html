@@ -6,7 +6,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title> 函数节流与防抖 -  礁湖星云</title>
+    <title> 函数防抖与节流 -  礁湖星云</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
     <link rel="canonical" href="/2015/05/12/function-debounced-and-throttled.html">
@@ -45,14 +45,14 @@
                     <article class="post type-post status-publish format-standard hentry">
     <header class="entry-header">
         <h1 class="entry-title">
-            函数节流与防抖
+            函数防抖与节流
         </h1>
     </header><!-- .entry-header -->
     <div class="entry-content">
         <p><code>underscore.js</code>提供了很多很有用的函数，今天想说说其中的两个。这两个函数都用于限制函数的执行。</p>
 <h2>debounce</h2>
-<p>在解释这个函数前，我们先从一个例子看下这个函数的使用场景。假设我们网站有个搜索框，用户输入文本我们会自动联想匹配出一些结果供用户选择。我们可能首先想到的做法就是监听<code>keypress</code>事件，然后异步去查询结果。这个方法本身是没错的，但是如果用户快速的输入了一连串的字符，假设是10个字符，那么就会在瞬间触发了10次的请求，这无疑不是我们想要的。我们想要的是用户停止输入的时候才去触发查询的请求，这时候<code>函数节流</code>可以帮到我们。</p>
-<p><code>函数节流</code>就是让某个函数在上一次执行后等待某个时间后再执行，而在这个等待时间内函数都不再执行。</p>
+<p>在解释这个函数前，我们先从一个例子看下这个函数的使用场景。假设我们网站有个搜索框，用户输入文本我们会自动联想匹配出一些结果供用户选择。我们可能首先想到的做法就是监听<code>keypress</code>事件，然后异步去查询结果。这个方法本身是没错的，但是如果用户快速的输入了一连串的字符，假设是10个字符，那么就会在瞬间触发了10次的请求，这无疑不是我们想要的。我们想要的是用户停止输入的时候才去触发查询的请求，这时候<code>函数防抖</code>可以帮到我们。</p>
+<p><code>函数防抖</code>就是让某个函数在上一次执行后，满足等待某个时间内不再触发此函数后再执行，而在这个等待时间内再次触发此函数，等待时间会重新计算。</p>
 <p>我们先看下<code>underscore.js</code>里相关函数的定义：</p>
 <div class="highlight">_.debounce(function, wait, [immediate])</div>
 <pre class="brush:javascript;gutter:true;first-line:813;">
@@ -92,7 +92,7 @@ _.debounce = function(func, wait, immediate) {
   };
 };
 </pre>
-<p>参数<code>function</code>是需要进行函数节流的函数；参数<code>wait</code>则是需要等待的时间，单位为毫秒；<code>immediate</code>参数如果为<code>true</code>，则<code>debounce</code>函数会在调用时立刻执行一次<code>function</code>，而不需要等到<code>wait</code>这个时间后，例如防止点击提交按钮时的多次点击就可以使用这个参数。</p>
+<p>参数<code>function</code>是需要进行函数防抖的函数；参数<code>wait</code>则是需要等待的时间，单位为毫秒；<code>immediate</code>参数如果为<code>true</code>，则<code>debounce</code>函数会在调用时立刻执行一次<code>function</code>，而不需要等到<code>wait</code>这个时间后，例如防止点击提交按钮时的多次点击就可以使用这个参数。</p>
 <p>所以，上面那个场景，我们可以这么解决：</p>
 <pre class="brush:javascript;gutter:true;">
 function query() { 
@@ -103,7 +103,7 @@ var lazyQuery = _.debounce(query, 300);
 $('#search').keypress(lazyQuery);
 </pre>
 <h2>throttle</h2>
-<p>我们网站经常会有这样的需求，就是滚动浏览器滚动条的时候，更新页面上的某些布局内容或者去调用后台的某接口查询内容。同样的，如果不对函数调用的频率加以限制的话，那么可能我们滚动一次滚动条就会产生N次的调用了。但是这次的情况跟上面的有所不同，我们不是要在每完成等待某个时间后去执行某函数，而是要每间隔某个时间去执行某函数，避免函数的过多执行，这个方式就叫<code>函数防抖</code>。</p>
+<p>我们网站经常会有这样的需求，就是滚动浏览器滚动条的时候，更新页面上的某些布局内容或者去调用后台的某接口查询内容。同样的，如果不对函数调用的频率加以限制的话，那么可能我们滚动一次滚动条就会产生N次的调用了。但是这次的情况跟上面的有所不同，我们不是要在每完成等待某个时间后去执行某函数，而是要每间隔某个时间去执行某函数，避免函数的过多执行，这个方式就叫<code>函数节流</code>。</p>
 <p>同样的，我们看下<code>underscore.js</code>里相关函数的定义：</p>
 <div class="highlight">_.throttle(function, wait, [options]) </div>
 <pre class="brush:javascript;gutter:true;first-line:776;">
@@ -144,7 +144,7 @@ _.throttle = function(func, wait, options) {
   };
 };
 </pre>
-<p>参数<code>function</code>是需要进行函数防抖的函数；参数<code>wait</code>则是函数执行的时间间隔，单位是毫秒。<code>option</code>有两个选项，<code>throttle</code>第一次调用时默认会立刻执行一次<code>function</code>，如果传入<code>{leading: false}</code>，则第一次调用时不执行<code>function</code>。<code>{trailing: false}</code>参数则表示禁止最后那一次延迟的调用。具体可以看源码进行理解。</p>
+<p>参数<code>function</code>是需要进行函数节流的函数；参数<code>wait</code>则是函数执行的时间间隔，单位是毫秒。<code>option</code>有两个选项，<code>throttle</code>第一次调用时默认会立刻执行一次<code>function</code>，如果传入<code>{leading: false}</code>，则第一次调用时不执行<code>function</code>。<code>{trailing: false}</code>参数则表示禁止最后那一次延迟的调用。具体可以看源码进行理解。</p>
 <p>所以，在滚动滚动条的场景，我们可以这么做：</p>
 <pre class="brush:javascript;gutter:true;">
 function handleScroll() { 
