@@ -55,7 +55,16 @@ Requests不依赖于任何PHP标准库外的扩展，唯一的要求就是需要
 </div>
 <h2>安装和使用</h2>
 <h3>通过Composer安装</h3>
-<div class="highlight">composer require rmccue/requests</div>
+<div class="highlight">
+{
+    "require": {
+        "rmccue/requests": "&gt;=1.0"
+    },
+    "autoload": {
+        "psr-0": {"Requests": "library/"}
+    }
+}
+</div>
 <h3>自动加载</h3>
 <p>可以使用Composer的加载器：</p>
 <pre class="brush:php;gutter:false;">
