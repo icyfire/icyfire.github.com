@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title> Zephir入门 —— Hello world篇 -  礁湖星云</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="canonical" href="/2015/07/19/zephir-hello-world.html">
+    <link rel="stylesheet" href="/stylesheets/style_new.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/stylesheets/bootstrap/doc.min.css">
+    <link rel="stylesheet" href="/stylesheets/hljs/monokai_sublime.css">
+</head>
+<body class="blog">
+    <div class="site">
+        <div id="main" class="wrapper">
+            <div id="primary" class="site-content">
+                <div id="content" role="main">
+                    <article class="post">
+    <header class="entry-header">
+        <h1 class="entry-title">
+            Zephir入门 —— Hello world篇
+        </h1>
+    </header>
+    <div class="entry-content">
+        <h1 id="section">概述</h1>
+<p><a href="http://zephir-lang.com" target="_blank">Zephir</a>是一个开源的用于简化PHP扩展的创建和维护的语言。它使得不擅长C/C++的PHP开发人员也能写出PHP扩展。Zephir是Zend Engine/PHP/Intermediate缩写，读音为zephyr。</p>
+
+<p>Zephir在语法上跟PHP有很多相似之处，PHP开发人员可以很快上手，但也有很多地方上的不同需要我们去学习。下面是Zephir一些主要的特色：</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>变量类型</td>
+      <td>动态/静态</td>
+    </tr>
+    <tr>
+      <td>内存安全</td>
+      <td>不允许指针和直接的内存管理</td>
+    </tr>
+    <tr>
+      <td>编译模型</td>
+      <td>AOT(ahead of time)</td>
+    </tr>
+    <tr>
+      <td>内存模型</td>
+      <td>task-local垃圾回收</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="section-1">安装</h1>
+
+<h2 id="section-2">依赖</h2>
+<p>要使用Zephir和编译出一个PHP扩展，需要先安装以下的依赖：</p>
+
+<ul>
+  <li>gcc &gt;= 4.x/clang &gt;= 3.x</li>
+  <li>re2c 0.13+</li>
+  <li>gnu make 3.81+</li>
+  <li>autoconf 2.31+</li>
+  <li>automake 1.14+</li>
+  <li>libpcre3</li>
+  <li>php development headers and tools</li>
+</ul>
+
+<h2 id="section-3">安装</h2>
+<p>这里选择使用<code>git</code>的方式获取源代码并进行安装：</p>
+
+<pre><code class="language-bash">$ git clone https://github.com/phalcon/zephir
+$ cd zephir
+$ ./install-json
+$ ./install -c
+</code></pre>
+
+<blockquote>
+  <p>如果已经安装了<code>json-c</code>，那么可以忽略 <code>./install-json</code>这一步。</p>
+</blockquote>
+
+<h2 id="section-4">验证</h2>
+<p>通过运行zephir命令验证下是否安装成功：</p>
+
+<pre><code class="language-bash">$ zephir help
+
+ _____              __    _
+/__  /  ___  ____  / /_  (_)____
+  / /  / _ \/ __ \/ __ \/ / ___/
+ / /__/  __/ /_/ / / / / / /
+/____/\___/ .___/_/ /_/_/_/
+         /_/
+
+Zephir version 0.7.1b
+
+Usage: 
+        command [options]
+
+Available commands:
+        stubs               Generates extension PHP stubs
+        install             Installs the extension (requires root password)
+        fullclean           Cleans the generated object files in compilation
+        build               Generate/Compile/Install a Zephir extension
+        generate            Generates C code from the Zephir code
+        clean               Cleans the generated object files in compilation
+        builddev            Generate/Compile/Install a Zephir extension in development mode
+        compile             Compile a Zephir extension
+        version             Shows the Zephir version
+        api [--theme-path=/path][--output-directory=/path][--theme-options={json}|/path]Generates a HTML API
+        help                Displays this help
+        init [namespace]    Initializes a Zephir extension
+
+Options:
+        -f([a-z0-9\-]+)     Enables compiler optimizations
+        -fno-([a-z0-9\-]+)  Disables compiler optimizations
+        -w([a-z0-9\-]+)     Turns a warning on
+        -W([a-z0-9\-]+)     Turns a warning off
+</code></pre>
+
+<h1 id="section-5">我们的第一个扩展</h1>
+<p>下面我们使用Zephier来创建一个“hello world”扩展。</p>
+
+<h2 id="section-6">初始化</h2>
+<p>首先，我们使用<code>init</code>命令来初始化扩展的基本结构（假设我们扩展的名称为“utils”）：</p>
+
+<pre><code class="language-bash">$ zephir init utils
+</code></pre>
+
+<p>成功运行后，我们应该会得到如下的目录结构：</p>
+
+<pre><code class="language-bash">utils/
+   ext/
+   utils/
+</code></pre>
+
+<p><code>ext</code>目录里放的是编译器需要用到的代码，不用理会，我们的Zephir代码将放在跟扩展名同名的<code>utils</code>里。</p>
+
+<h2 id="section-7">编写代码</h2>
+<p>我们在<code>utils</code>目录下创建一个文件：<code>greeting.zep</code>，并编写代码：</p>
+
+<pre><code class="language-php">namespace Utils;
+
+class Greeting
+{
+
+    public static function say()
+    {
+        echo "hello world!";
+    }
+
+}
+</code></pre>
+
+<p>这里不深入Zephir的语法，但是可以看到语法跟PHP很类似，上面的代码定义了一个类<code>Greeting</code>和一个方法<code>say()</code>。</p>
+
+<blockquote>
+  <p>Zephir的语法详情可以参考官方的文档：<a href="http://zephir-lang.com/language.html">http://zephir-lang.com/language.html</a>。</p>
+</blockquote>
+
+<h2 id="section-8">编译</h2>
+<p>接下来，我们回到<code>utils</code>根目录下并运行<code>build</code>命令编译出扩展：</p>
+
+<pre><code class="language-bash">$ zephir build     
+Preparing for PHP compilation...
+Preparing configuration file...
+Compiling...
+Installing...
+Extension installed!
+Add extension=utils.so to your php.ini
+Don't forget to restart your web serverp
+</code></pre>
+
+<p>编译成功后，我们在PHP配置文件里增加以下一行：</p>
+
+<pre><code class="language-ini">extension=utils.so
+</code></pre>
+
+<h2 id="section-9">验证</h2>
+<p>通过如下命令查看我们的扩展是否正常加载：</p>
+
+<pre><code class="language-bash">php -m
+[PHP Modules]
+...
+memcached
+mysql
+mysqli
+mysqlnd
+openssl
+utils
+...
+</code></pre>
+
+<p>如果看到我们扩展的名字，则证明已成功加载。</p>
+
+<p>然后我们在PHP里调用<code>say()</code>方法：</p>
+
+<pre><code class="language-php">&lt;?php
+
+echo Utils\Greeting::say(), "\n";
+</code></pre>
+
+<p>正常的话会输出：<code>hello world!</code>。至此我们也完成了我们的第一个扩展。</p>
+
+<h1 id="section-10">参考</h1>
+<p><a href="http://zephir-lang.com/index.html">http://zephir-lang.com/index.html</a></p>
+
+
+    </div>
+    <footer class="entry-meta">
+        本条目发布于<time class="entry-date">2015年07月19日</time>。
+    </footer>
+</article>
+                </div>
+            </div>
+        </div>
+        <footer id="colophon" role="contentinfo">
+            <div class="site-info">
+                <a href="http://t.qq.com/icyfire" title="腾讯微博">@icyfire</a>
+            </div>
+        </footer>
+    </div>
+    <script type='text/javascript' src='/javascripts/highlight.pack.js'></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>
